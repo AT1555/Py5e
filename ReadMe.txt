@@ -66,4 +66,5 @@ CHANGELOG
 (2021/10/23): Fixed bugs in the character creation wizard that did not properly format a new sheet to conform with the current sheet parser. 
 (2021/11/21): Quitting without using "Save and Quit" (pressing "Quit" or closing the window) now confirms with the user whether they wish to quit without saving. 
 (2021/11/25): Logs are now written in a single logfile per character that is appended to upon closing a sheet. Execute the file CondenseLogs.exe in the directory with the previous log file to condense them inot a single new-style log file. 
-(2022/05/06): Text now autmatically resizes when window is reseized.
+(2022/05/06): Text now automatically resizes when window is reseized.
+(2022/05/07): Overhauled save file read-in and treatment of spells and spell slots. .5e files from before this version are no longer compatible and must be updated using 2022_05_06-2022_05_07.exe before they will open succesfully in the new version. The start screen now automatically finds .5e files in the launch directory to open quickly. The automatic text resizing has been replaced by a button in the upper right of the character tab. A bug involving a "Day" rest period was fixed that caused "Day" to be case senstive. Class specific spell slots are now supported. 
