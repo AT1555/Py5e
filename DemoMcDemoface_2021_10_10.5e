@@ -1,0 +1,125 @@
+%%CHARACTER
+NAME=Demo McDemoface
+CLASS=Demo 1, Test 3
+HP=24
+MAXHP=25
+TEMPHP=5
+SPEED=30.0
+STR=16
+DEX=8
+CON=12
+INT=10
+WIS=8
+CHA=7
+PRO=5
+GOLD=100.0
+SAVETHROWS=STR,CON,DEX
+SKILLS=Athletics,Intimidation,Investigation
+EXPERT=Athletics
+LANGUAGES=Common,Infernal
+PROFS=Gaming Sets,Thieves' Tools
+FEATURES=Darkvision,Silver Tongue
+COLOR=210,215,220
+FONTCOLOR=50,0,100
+Initiative:5
+
+%%ABILITIES
+%ABILITY
+NAME=Bardic Inspiration
+MAX=4
+REMAINING=3
+REST=SR
+
+%ABILITY
+NAME=Inspiration
+MAX=0
+REMAINING=1
+REST=none
+
+%ABILITY
+NAME=Mountain's Endurance
+MAX=1
+REMAINING=1
+REST=LR
+
+%%EQUIPMENT
+%EQUIP
+NAME=Contacts
+MODS=Perception (P):+2
+EQUIPPED=YES
+
+%EQUIP
+NAME=Glasses
+MODS=Perception:+2
+EQUIPPED=YES
+
+%EQUIP
+NAME=Leather Armor
+MODS=AC:+1
+
+%EQUIP
+NAME=Plate Armor
+MODS=AC:+8
+MAXDEX=+0
+
+%EQUIP
+NAME=Ring of Dexterity
+MODS=DEX:+4
+
+%EQUIP
+NAME=Ring of Dexterity
+MODS=DEX:+4
+
+%EQUIP
+NAME=Scale Maille
+MODS=AC:+4
+MAXDEX=+2
+
+%EQUIP
+NAME=Shield
+MODS=AC:+3
+HITDAMAGE=1 1d4+1
+SCALING=STR
+PROF=YES
+EQUIPPED=YES
+
+%EQUIP
+NAME=Sword of Strength +3
+MODS=STR:+2
+HITDAMAGE=3 1d8+3
+SCALING=STR
+PROF=YES
+EQUIPPED=YES
+
+%%BACKPACK
+Beers:2
+Health Potions:1
+
+%%SPELLBOOK
+INT
+%0
+Thunderclap % 1 % Casting Time: 1 action\\Range: Self (5-foot radius)\\Components: S\\Duration: Instantaneous\\You create a burst of thunderous sound, which can be heard 100 feet away. Each creature other than you within 5 feet of you must make a Constitution saving throw. On a failed save, the creature takes 1d6 thunder damage. At Higher Levels. The spell's damage increases by 1d6 when you reach 5th level (2d6), 11th level (3d6), and 17th level (4d6).
+%1 4 4 LR
+Chromatic Orb % 1 % Description goes here.\\Separate lines by using double backslashes
+Ice Knife % 0 % Description goes here.\\Separate lines by using double backslashes
+%2 3 2 LR
+Misty Step % 1 % Description goes here.\\Separate lines by using double backslashes
+Mind Spike % 1 % Description goes here.\\Separate lines by using double backslashes
+%3 3 2 LR
+Fireball % 1 % Description goes here.\\Separate lines by using double backslashes
+%4 3 2 LR
+Dimensional Door % 1 % Description goes here.\\Separate lines by using double backslashes
+%6 3 2 LR
+Wall of Ice % 1 % Description goes here.\\Separate lines by using double backslashes
+%7 3 2 LR
+Plane Shift % 1 % Description goes here.\\Separate lines by using double backslashes
+%8 3 2 LR
+Antimagic Field % 1 % Description goes here.\\Separate lines by using double backslashes
+%9 2 2 LR
+Time Stop % 1 % Description goes here.\\Separate lines by using double backslashes
+
+%%NOTES
+Generally a cool guy. 
+
+Remember to collect the loot.
+
