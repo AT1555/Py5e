@@ -1,6 +1,6 @@
 Py5e - An Interactive Character Sheet for D&D 5th Edition
 Developed by Anthony Taylor
-Version: 2021_11_25
+Version: 2022_05_08
 
 INTRODUCTION
 
@@ -34,23 +34,35 @@ Color: The paintbrush icon allows the user to customize the sheet's background a
 
 STATS: The stat block shows the character's current ability scores and Proficiency Bonus. For each ability score, the current score is shown (with bonuses from equipment, etc.), then the corresponding ability modifier, then the saving throw bonus. 
 
-SKILLS: The skill block shows a character's bonuses to each skill (including passive skills, and initiative), calculated from the character's ability scores, equipment, Skill Proficiencies, and Expertise’s. This block also supports the Jack of All Trades feature (as a 'bonus feature', see .5e file construction). Proficient skills are marked with an "*", and expertise’s are marked with "**". Passive skills are marked with "(P)". 
+SKILLS: The skill block shows a character's bonuses to each skill (including passive skills, and initiative), calculated from the character's ability scores, equipment, Skill Proficiencies, and Expertise’s. This block also supports the Jack of All Trades feature, if such a feature is added as a Feature (See below) with the specific name "Jack of All Trades". Proficient skills are marked with an "*", and expertise skills are marked with "**". Passive skills are marked with "(P)". 
 
 LANGUAGES AND PROFICIENCIES: These blocks are non-interactive, and simply show the character’s languages and proficiencies. Listing a proficiency here does not affect the rest of the sheet. See equipment proficiency in the .5 file equipment section). 
 
-FEATURES AND ABILITIES: This block shows the features and abilities of a character. Each entry may be clicked to expend one use. This may be reversed by clicking the "+" button next to each feature. Each feature is also tied to a type of rest (see Recovery) and will reset to max when the corresponding rest is triggered. 
+ABILITIES: This block shows the abilities of a character. Each entry may be clicked to expend one use. This may be reversed by clicking the "+" button next to each feature. Each feature is also tied to a type of rest (see Recovery) and will reset to max when the corresponding rest is triggered. New abiliites may be added by clicking on the "Abilities (+)" header.
 
-EQUIPTMENT: This block shows a characters equipped (box with checkmark) and unequipped (empty box) gear. Clicking on a piece of gear will toggle its equipped status. Equipped gear that provides stat bonuses will only do so when equipped. Gear with bonuses will show display the bonus next to its name. Gear that can deal damage will show its current "To Hit" bonus, and damage output, based on the gear's intrinsic stats, as well as if the character is tagged as proficient in its use, and the character's ability scores. Gear that provides a special ability or feature should have that feature entered separately in the Features and Abilities section. (Currently, toggling such a piece of gear will not affect the corresponding ability. This might be added in a future release). 
+EQUIPMENT: This block shows a characters equipped (box with checkmark) and unequipped (empty box) gear. Clicking on a piece of gear will toggle its equipped status. Equipped gear that provides stat bonuses will only do so when equipped. Gear with bonuses will show display the bonus next to its name. Gear that can deal damage will show its current "To Hit" bonus, and damage output, based on the gear's intrinsic stats, as well as if the character is tagged as proficient in its use, and the character's ability scores. Abilities or features provided by gear should have those abilites entered separately in the Abilities section. New equipment may be added by clicking on the "Equipment (+)" header. 
+
+FEATURES: This block shows a character's features. Features consist of a Name, Mods, and a Description. By clicking on a feature's name, the description will appear in a popup window. Mods in features function the same as Equipment mods. New features may be added by clicking on the Feature (+)" header.
 
 RECOVERY: This block shows three types of recovery: Long/Short rests, and Days. Clicking a recovery options will automatically reset all Features and Abilities that restore on that recovery option. Note that a Long Rest will also trigger the effects of a Short Rest. However, a Day will not trigger a Long Rest or Short Rest. (Other time intervals may be added in future releases.)
 
-SAVE/QUIT: The Save and Save & Quit buttons are fairly self explanatory. Clicking "Save" will open an Explorer dialog for providing a save filename and location. This saves the character sheet's current configuration in a .5e file. Pressing "Save & Quit" will provide the same prompts as "Save", then exit the program. Selecting "Quit" will exit the program immediately.
+SAVE/&/QUIT: The Save, &, and Quit buttons are fairly self explanatory. Clicking "Save" will open an Explorer dialog for providing a save filename and location. This saves the character sheet's current configuration in a .5e file. Pressing "&" will provide the same prompts as "Save", then exit the program. Selecting "Quit" will exit the program.
 
 BACKPACK TAB
 
 The backpack tab shows items that a character currently holds, along with the quantity of each item. Clicking an item lets the user adjust its quantity. Clicking the "X" next to an item will remove it from the list. Clicking "Add Item" will guide the user though a few prompts to add a new item to the list. Gold is shown at the top of the list, and can be modified by clicking on it. (There is currently no support for Platinum, silver, or coppers. Simply use fraction gold pieces to represent these denominations). 
 
 SPELLBOOK TAB
+
+The Spellbook Tab contains a listing of a character's spells, as well as any spell slots to which they have access. New spells may be added with the "Add Spell" button. Clicking on a spell will show its description in a popup window. Spell slots may be added by creating an ability that is marked as a spell slot (see add ability popup window). The name of such an ability must start with an integer [0-9] to correctly display it on the Spellbook tab. When first added, new spell slots will appear at the bottom of the spell list. This is a known bug that resolves itself if the sheet is saved and reloaded.
+
+NOTES TAB
+
+The Notes tab is a free-form space for taking notes. These are saved in the character sheet and may be modified freely. 
+
+LOG TAB
+
+The Log tab keep track of all actions taken in Py5e for a given runtime. This log is also appended to a .log file when Py5e is closed. 
 
 CHANGELOG
 (2021/03/15): Added try/except functionality to import to allow for characters with missing sections. Section order no longer matters. Finished Character section of creation script.
@@ -68,4 +80,4 @@ CHANGELOG
 (2021/11/25): Logs are now written in a single logfile per character that is appended to upon closing a sheet. Execute the file CondenseLogs.exe in the directory with the previous log file to condense them inot a single new-style log file. 
 (2022/05/06): Font size now automatically resizes when window is resized.
 (2022/05/07): Overhauled save file read-in and treatment of spells and spell slots. .5e files from before this version are no longer compatible and must be updated using 2022_05_06-2022_05_07.exe before they will open succesfully in the new version. The start screen now automatically finds .5e files in the launch directory to open quickly. The automatic text resizing has been replaced by a button in the upper right of the character tab. A bug involving a "Day" rest period was fixed that caused "Day" to be case senstive. Class specific spell slots are now supported. 
-(2022/05/08): Features are now an new class. They accept the keywords: NAME, MODS, TEXT, and can be added from the GUI. MODS will directly modify the calculated ability scores, HP, AC, skills, etc. MODS activate immediately on load, and deactivate if a feature is delated. The feature name may be clicked to see a qualitative description of the feature. The old features listing has been removed from the program and the old character FEATURES keyword will be automatically removed from .5e files when saved with the latest Py5e version. The startup screen has been revamped with character colors from .5e files. Exiting the startup screen with the window manger now fully kills the script. Upon exit, the new character creator will now automatically load the created character. Jack of all Trades now applies by looking for the word "Jack" at the start of a feature's name. The old JACK keyword functionality had been removed. 
+(2022/05/08): Features are now an new class. They accept the keywords: NAME, MODS, TEXT, and can be added from the GUI. MODS will directly modify the calculated ability scores, HP, AC, skills, etc. MODS activate immediately on load, and deactivate if a feature is delated. The feature name may be clicked to see a qualitative description of the feature. The old features listing has been removed from the program and the old character FEATURES keyword will be automatically removed from .5e files when saved with the latest Py5e version. The startup screen has been revamped with character colors from .5e files. Exiting the startup screen with the window manger now fully kills the script. Upon exit, the new character creator will now automatically load the created character. Jack of all Trades now applies by looking for the word "Jack" at the start of a feature's name. The old JACK keyword functionality had been removed. Expanded README text.
