@@ -1,0 +1,261 @@
+%%CHARACTER
+NAME=Demo McDemoface
+CLASS=Demo 1, Test 3
+HP=24
+MAXHP=25
+TEMPHP=5
+SPEED=30.0
+STR=16
+DEX=8
+CON=12
+INT=10
+WIS=8
+CHA=7
+PRO=5
+GOLD=100.0
+SAVETHROWS=STR,CON,DEX
+SKILLS=Athletics,Intimidation,Investigation
+EXPERT=Athletics
+CASTINGSTAT=INT
+LANGUAGES=Common,Infernal
+PROFS=Gaming Sets,Thieves' Tools
+COLOR=210,215,220
+FONTCOLOR=50,0,100
+Initiative:5
+
+%%ATTRIBUTES
+%ABILITY
+NAME=Bardic Inspiration
+MAX=4
+REMAINING=3
+REST=SR
+SPELLSLOT=NO
+
+%ABILITY
+NAME=Inspiration
+MAX=0
+REMAINING=1
+REST=none
+SPELLSLOT=NO
+
+%ABILITY
+NAME=Mountain's Endurance
+MAX=1
+REMAINING=1
+REST=LR
+SPELLSLOT=NO
+
+%ABILITY
+NAME=1st Level Spells
+MAX=4
+REMAINING=3
+REST=LR
+SPELLSLOT=YES
+
+%ABILITY
+NAME=1st Level Warlock Spells
+MAX=4
+REMAINING=3
+REST=SR
+SPELLSLOT=YES
+
+%ABILITY
+NAME=2nd Level Spells
+MAX=4
+REMAINING=3
+REST=LR
+SPELLSLOT=YES
+
+%ABILITY
+NAME=3rd Level Spells
+MAX=4
+REMAINING=3
+REST=LR
+SPELLSLOT=YES
+
+%ABILITY
+NAME=4th Level Spells
+MAX=4
+REMAINING=3
+REST=LR
+SPELLSLOT=YES
+
+%ABILITY
+NAME=5th Level Spells
+MAX=4
+REMAINING=3
+REST=LR
+SPELLSLOT=YES
+
+%ABILITY
+NAME=6th Level Spells
+MAX=4
+REMAINING=3
+REST=LR
+SPELLSLOT=YES
+
+%ABILITY
+NAME=7th Level Spells
+MAX=4
+REMAINING=3
+REST=LR
+SPELLSLOT=YES
+
+%ABILITY
+NAME=8th Level Spells
+MAX=4
+REMAINING=3
+REST=LR
+SPELLSLOT=YES
+
+%ABILITY
+NAME=9th Level Spells
+MAX=4
+REMAINING=3
+REST=LR
+SPELLSLOT=YES
+
+%EQUIP
+NAME=Contacts
+MODS=Perception (P):+2
+EQUIPPED=YES
+
+%EQUIP
+NAME=Glasses
+MODS=Perception:+2
+EQUIPPED=YES
+
+%EQUIP
+NAME=Leather Armor
+MODS=AC:+1
+
+%EQUIP
+NAME=Plate Armor
+MODS=AC:+8
+MAXDEX=+0
+
+%EQUIP
+NAME=Ring of Dexterity
+MODS=DEX:+4
+
+%EQUIP
+NAME=Ring of Dexterity
+MODS=DEX:+4
+
+%EQUIP
+NAME=Scale Maille
+MODS=AC:+4
+MAXDEX=+2
+
+%EQUIP
+NAME=Shield
+MODS=AC:+3
+HITDAMAGE=1 1d4+1
+SCALING=STR
+PROF=YES
+EQUIPPED=YES
+
+%EQUIP
+NAME=Sword of Strength +3
+MODS=STR:+2
+HITDAMAGE=3 1d8+3
+SCALING=STR
+PROF=YES
+EQUIPPED=YES
+
+%SPELL
+NAME=Thunderclap
+LEVEL=0
+PREP=1
+TEXT=Notes and flavor text go here.\\Separate lines by using double backslashes
+
+%SPELL
+NAME=Chromatic Orb
+LEVEL=1
+PREP=1
+TEXT=Notes and flavor text go here.\\Separate lines by using double backslashes
+
+%SPELL
+NAME=Misty Step
+LEVEL=2
+PREP=1
+TEXT=Notes and flavor text go here.\\Separate lines by using double backslashes
+
+%SPELL
+NAME=Mind Spike
+LEVEL=2
+PREP=1
+TEXT=Notes and flavor text go here.\\Separate lines by using double backslashes
+
+%SPELL
+NAME=Slow
+LEVEL=3
+PREP=1
+TEXT=Notes and flavor text go here.\\Separate lines by using double backslashes
+
+%SPELL
+NAME=Fireball
+LEVEL=3
+PREP=1
+TEXT=Notes and flavor text go here.\\Separate lines by using double backslashes
+
+%SPELL
+NAME=Dimension Door
+LEVEL=4
+PREP=1
+TEXT=Notes and flavor text go here.\\Separate lines by using double backslashes
+
+%SPELL
+NAME=Custom Spell
+LEVEL=5
+PREP=1
+TEXT=Custom Spell description goes here.\\Separate lines by using double backslashes
+
+%SPELL
+NAME=Teleportation Circle
+LEVEL=5
+PREP=1
+TEXT=Notes and flavor text go here.\\Separate lines by using double backslashes
+
+%SPELL
+NAME=Wall of Ice
+LEVEL=6
+PREP=1
+TEXT=Notes and flavor text go here.\\Separate lines by using double backslashes
+
+%SPELL
+NAME=Plane Shift
+LEVEL=7
+PREP=1
+TEXT=Notes and flavor text go here.\\Separate lines by using double backslashes
+
+%SPELL
+NAME=Antimagic Field
+LEVEL=8
+PREP=1
+TEXT=Notes and flavor text go here.\\Separate lines by using double backslashes
+
+%SPELL
+NAME=Time Stop
+LEVEL=9
+PREP=1
+TEXT=Notes and flavor text go here.\\Separate lines by using double backslashes
+
+%FEATURE
+NAME=Observant
+MODS=Perception (P):+5, Investigation (P):+5
+TEXT=You can read lips, and you have a +5 bonus in passive Perception and passive Investigation.
+
+%FEATURE
+NAME=Armor Bonus
+MODS=AC:+5
+TEXT=Test to fix AC Feature bug, +5 AC
+
+%%BACKPACK
+Beers:2
+Health Potions:1
+
+%%NOTES
+Generally a cool guy. 
+Remember to collect the loot.
+
