@@ -9,16 +9,13 @@ As its name suggests, Py5e is written in Python 3.8 and condensed into a fully p
 What it does:
 Py5e was created with the intention of having a character sheet that is easy to use during a session for the tracking of ability uses, spell slots, items and equipment. Abilities with limited numbers of uses are tracked, and can be reset with one click on short/long rests, or manually restored for abilities such as "Arcane Recovery" (or similar). Backpack items can be added and discarded on the fly. Equipment, including magic items that affect ability scores, or provide bonuses to AC, can be equipped/unequipped with the associated stats updating automatically. 
 
-What it does not do:
-Py5e is not intended to assist in leveling up a character, or in character creation. Permanent changes in a character's stats or a character's abilities require manual editing of a .5e character file (more on this later). Py5e's purpose is to automate resource management and stat calculations during a session, not to provide full character editing, which is best performed outside a session.
-
 INSTALLATION
 
 As a standalone executable, Py5e does not require any installation, or dependencies. 
 
 STARTING THE PROGRAM
 
-Simply run the EXE by double-clicking on it, or by calling it from the command line. First, a command prompt will open while Py5e loads. This command prompt is simply a background window and may be minimized, but closing it will terminate Py5e. Next, Py5e will open an Explore-like window to select a character file. Character files (stylized as '.5e' files) are simply ASCII/text files containing all of the information necessary to define a character. After selecting an appropriate file, Py5e's main window will open. This window is divided into 3-4 tabs (depending on if the character has spells or not). 
+Simply run the EXE by double-clicking on it, or by calling it from the command line. Py5e will open an Explore-like window to select a character file. Character files (stylized as '.5e' files) are simply ASCII/text files containing all of the information necessary to define a character. After selecting an appropriate file, Py5e's main window will open. This window is divided into 4-5 tabs (depending on if the character has spells or not). 
 
 CHARACTER TAB
 
