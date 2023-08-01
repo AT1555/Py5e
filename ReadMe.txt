@@ -1,6 +1,6 @@
 Py5e - An Interactive Character Sheet for D&D 5th Edition
 Developed by Anthony Taylor
-Version: 2023_06_15
+Version: 2023_08_01
 
 INTRODUCTION
 
@@ -85,3 +85,4 @@ CHANGELOG
 (2023/06/15): Fixed a bug that caused a Long Rest to not reset Temp HP nor set HP to the maximum value.
 (2023/07/25): Complete rewrite of the character creation system. Characters now initialize as a blank character and sheets are loaded as character.load(). GUI global variables are now created in character for character.show(). Fixed bug for characters with no skills, or no saving throws. Character creation and editing are now a shared interface. Manually editing .5e files should no longer be necessary.
 (2023/07/30): Added a "no lookup" option for spells with homebrew modifications. Abilities can now have their maximum uses determined by a skill or ability score. Simply enter the skill name, or the three capital letter ability score abbreviation instead of an integer. Fixed a bug where new spells/abilities/etc did not update their color to match the sheet. Fixed a bug were editing an ability score while that score was buffed/debuffed incorrectly calculated the new buffed/debuffed score.
+(2023/08/01): Added GUI option for removing spells.
