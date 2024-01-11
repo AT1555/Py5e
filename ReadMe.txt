@@ -1,6 +1,6 @@
 Py5e - An Interactive Character Sheet for D&D 5th Edition
 Developed by Anthony Taylor
-Version: 2023_10_05
+Version: 2024_01_10
 
 INTRODUCTION
 
