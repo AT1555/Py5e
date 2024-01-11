@@ -88,4 +88,5 @@ CHANGELOG
 (2023/08/01): Added GUI option for removing spells.
 (2023/08/15): Selecting "New Character" on startup now automatically opens the character editor. Fixed a bug where a newline character could be pasted into a Feature's or a Spell's description through the GUI and be written to file without santitization.
 (2023/09/25): Fixed a bug where adding items to the backpack removed the add items button. Spells now take both a display name and a lookup name. The display name determines what is listed on the character sheet. The Lookup name determines which spell description and data are automatically imported. The Lookup name can be left blank if no lookup is desired. Old sheets should be compatible with the new system. Simply open, then save your sheet to update to the new syntax.
-(2023/10/05): Fixed a bug where a character created via the GUI with no Languages or Proficiencies would not save peroperly.
+(2023/10/05): Fixed a bug where a character created via the GUI with no Languages or Proficiencies would not save properly.
+(2024/01/10): GUI refinement and reorganization including scroll bars, automatic background color, and lots of under the hood changes to make sure items expand to occupy the full space alloted to them. 
