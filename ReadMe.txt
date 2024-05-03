@@ -1,10 +1,10 @@
 Py5e - An Interactive Character Sheet for D&D 5th Edition
 Developed by Anthony Taylor
-Version: 2024_01_10
+Version: 2024_05_02
 
 INTRODUCTION
 
-As its name suggests, Py5e is written in Python 3.8 and condensed into a fully portable EXE by Pyinstaller (https://www.pyinstaller.org/).  As such, it should run on Windows 10 without any dependencies as a standalone EXE.
+As its name suggests, Py5e is written in Python 3.12 and condensed into a fully portable EXE by Pyinstaller (https://www.pyinstaller.org/).  As such, it should run on Windows 10/11 without any dependencies as a standalone EXE.
 
 What it does:
 Py5e was created with the intention of having a character sheet that is easy to use during a session for the tracking of ability uses, spell slots, items and equipment. Abilities with limited numbers of uses are tracked, and can be reset with one click on short/long rests, or manually restored for abilities such as "Arcane Recovery" (or similar). Backpack items can be added and discarded on the fly. Equipment, including magic items that affect ability scores, or provide bonuses to AC, can be equipped/unequipped with the associated stats updating automatically. 
@@ -90,3 +90,4 @@ CHANGELOG
 (2023/09/25): Fixed a bug where adding items to the backpack removed the add items button. Spells now take both a display name and a lookup name. The display name determines what is listed on the character sheet. The Lookup name determines which spell description and data are automatically imported. The Lookup name can be left blank if no lookup is desired. Old sheets should be compatible with the new system. Simply open, then save your sheet to update to the new syntax.
 (2023/10/05): Fixed a bug where a character created via the GUI with no Languages or Proficiencies would not save properly.
 (2024/01/10): GUI refinement and reorganization including scroll bars, automatic background color, and lots of under the hood changes to make sure items expand to occupy the full space alloted to them. 
+(2024/05/02): Editing spells is now part of the editing menu. The old add/remove spell options and displays have been removed.
