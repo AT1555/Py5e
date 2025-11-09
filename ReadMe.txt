@@ -1,6 +1,6 @@
 Py5e - An Interactive Character Sheet for D&D 5th Edition
 Developed by Anthony Taylor
-Version: 2024_05_02
+Version: 2025_11_09
 
 INTRODUCTION
 
@@ -91,4 +91,4 @@ CHANGELOG
 (2023/10/05): Fixed a bug where a character created via the GUI with no Languages or Proficiencies would not save properly.
 (2024/01/10): GUI refinement and reorganization including scroll bars, automatic background color, and lots of under the hood changes to make sure items expand to occupy the full space allotted to them. 
 (2024/05/02): Editing spells is now part of the editing menu. The old add/remove spell options and displays have been removed.
-(2025/11/05): Adding a feature that modifies a score or modifier (other than AC, deliberately held back to due infinite loop bug) will now auto-recompute all scores such that the effect is immediately granted (previously toggling a piece of equipment was necessary to initiate a refresh). Editing features is now part of the editing menu, but on the fly feature adding and deletion is still supported for status effects. The main tab height now expands with the window height as is no longer tied to the length of the skills block
+(2025/11/09): Adding a feature that modifies a score or modifier (other than AC, deliberately held back to due infinite loop bug) will now auto-recompute all scores such that the effect is immediately granted (previously toggling a piece of equipment was necessary to initiate a refresh). Editing features is now part of the editing menu, but on the fly feature adding and deletion is still supported for status effects. The main tab height now expands with the window height as is no longer tied to the length of the skills block
