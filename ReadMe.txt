@@ -1,10 +1,12 @@
 Py5e - An Interactive Character Sheet for D&D 5th Edition
 Developed by Anthony Taylor
-Version: 2025_11_09
+Version: 2026_03_01
+
+(Due to a recent overhaul and port from Tkinter to PySide6, this document is a bit out of date).
 
 INTRODUCTION
 
-As its name suggests, Py5e is written in Python 3.12 and condensed into a fully portable EXE by Pyinstaller (https://www.pyinstaller.org/).  As such, it should run on Windows 10/11 without any dependencies as a standalone EXE.
+As its name suggests, Py5e is written in Python 3.13 and condensed into a fully portable EXE by Pyinstaller (https://www.pyinstaller.org/).  As such, it should run on Windows 10/11 without any dependencies as a standalone EXE.
 
 What it does:
 Py5e was created with the intention of having a character sheet that is easy to use during a session for the tracking of ability uses, spell slots, items and equipment. Abilities with limited numbers of uses are tracked, and can be reset with one click on short/long rests, or manually restored for abilities such as "Arcane Recovery" (or similar). Backpack items can be added and discarded on the fly. Equipment, including magic items that affect ability scores, or provide bonuses to AC, can be equipped/unequipped with the associated stats updating automatically. 
@@ -33,7 +35,7 @@ STATS: The stat block shows the character's current ability scores and Proficien
 
 SKILLS: The skill block shows a character's bonuses to each skill (including passive skills, and initiative), calculated from the character's ability scores, equipment, Skill Proficiencies, and Expertise’s. This block also supports the Jack of All Trades feature, if such a feature is added as a Feature (See below) with the specific name "Jack of All Trades". Proficient skills are marked with an "*", and expertise skills are marked with "**". Passive skills are marked with "(P)". 
 
-LANGUAGES AND PROFICIENCIES: These blocks are non-interactive, and simply show the character’s languages and proficiencies. Listing a proficiency here does not affect the rest of the sheet. See equipment proficiency in the .5 file equipment section). 
+LANGUAGES AND PROFICIENCIES: These blocks are non-interactive, and simply show the character’s languages and proficiencies. Listing a proficiency here does not affect the rest of the sheet. See equipment proficiency in the .5 file equipment section. 
 
 ABILITIES: This block shows the abilities of a character. Each entry may be clicked to expend one use. This may be reversed by clicking the "+" button next to each feature. Each feature is also tied to a type of rest (see Recovery) and will reset to max when the corresponding rest is triggered. New abiliites may be added by clicking on the "Abilities (+)" header.
 
@@ -45,7 +47,7 @@ RECOVERY: This block shows three types of recovery: Long/Short rests, and Days. 
 
 SAVE/&/QUIT: The Save, &, and Quit buttons are fairly self explanatory. Clicking "Save" will open an Explorer dialog for providing a save filename and location. This saves the character sheet's current configuration in a .5e file. Pressing "&" will provide the same prompts as "Save", then exit the program. Selecting "Quit" will exit the program.
 
-BACKPACK TAB
+INVENTORY TAB
 
 The backpack tab shows items that a character currently holds, along with the quantity of each item. Clicking an item lets the user adjust its quantity. Clicking the "X" next to an item will remove it from the list. Clicking "Add Item" will guide the user though a few prompts to add a new item to the list. Gold is shown at the top of the list, and can be modified by clicking on it. (There is currently no support for Platinum, silver, or coppers. Simply use fraction gold pieces to represent these denominations). 
 
@@ -92,3 +94,4 @@ CHANGELOG
 (2024/01/10): GUI refinement and reorganization including scroll bars, automatic background color, and lots of under the hood changes to make sure items expand to occupy the full space allotted to them. 
 (2024/05/02): Editing spells is now part of the editing menu. The old add/remove spell options and displays have been removed.
 (2025/11/09): Adding a feature that modifies a score or modifier (other than AC, deliberately held back to due infinite loop bug) will now auto-recompute all scores such that the effect is immediately granted (previously toggling a piece of equipment was necessary to initiate a refresh). Editing features is now part of the editing menu, but on the fly feature adding and deletion is still supported for status effects. The main tab height now expands with the window height as is no longer tied to the length of the skills block
+(2026/03/01): Completely ported to Qt (PySide6) GUI. With this major change, bugs are expected and some previous features have been temporarily removed. Temporarily removed features include: deletion of Spells, Spell and Feature editing GUI, color customization, and fontsize customization. These will likely return in the future. Other changes: GOLD is no longer a character stat, and is instead a backpack item. Adding new items and equipment, Resting, Saving, and Editing characters is now performed using the drop down menus on the menu bar. 
