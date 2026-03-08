@@ -1,4 +1,4 @@
-from PySide6.QtGui import QAction, QKeySequence
+from PySide6.QtGui import QAction, QKeySequence, QShortcut
 from PySide6.QtWidgets import QMainWindow, QApplication, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QWidget, QTabWidget, QInputDialog, QScrollArea, QFrame, QFileDialog, QMessageBox, QDialog, QSpinBox, QTextEdit, QFormLayout, QLineEdit, QDialogButtonBox, QCheckBox, QComboBox
 from PySide6.QtCore import Qt
 import sys
@@ -8,7 +8,7 @@ import requests
 import json
 from os import getcwd
 
-version='2026_03_01'
+version='2026_03_08'
 
 class character():
     def __init__(self): #initalize blank character
@@ -25,7 +25,7 @@ class character():
         self.notes=''
         self.color=[236,230,220]
         self.fontcolor=[0,0,0]
-        self.fontsize=14
+        self.fontsize=10
         self.name='NAME'
         self.classes='CLASS'
         self.stats['HP']=0
@@ -63,35 +63,36 @@ class character():
                     currentblock=line.strip()[2:]
                     linesdict[currentblock]=[]
                 else: linesdict[currentblock].append(line)
-            for line in linesdict['CHARACTER']:
-                line=line.strip()
-                if line=='': continue
-                line=line.split('=')
-                if line[0]=='NAME': self.name=line[1].strip()
-                elif line[0]=='CLASS': self.classes=line[1].strip()
-                elif line[0]=='HP': self.stats['HP']=int(line[1])
-                elif line[0]=='MAXHP': self.stats['MAXHP']=int(line[1])
-                elif line[0]=='TEMPHP': self.stats['TEMPHP']=int(line[1])
-                elif line[0]=='SPEED': self.stats['SPEED']=int(float(line[1]))
-                elif line[0]=='STR': self.stats['STR']=int(line[1])
-                elif line[0]=='DEX': self.stats['DEX']=int(line[1])
-                elif line[0]=='CON': self.stats['CON']=int(line[1])
-                elif line[0]=='INT': self.stats['INT']=int(line[1])
-                elif line[0]=='WIS': self.stats['WIS']=int(line[1])
-                elif line[0]=='CHA': self.stats['CHA']=int(line[1])
-                elif line[0]=='PRO': self.stats['PRO']=int(line[1])
-                elif line[0]=='GOLD': self.stats['GOLD']=float(line[1]) #to be removed in future versions as character.stats['GOLD'] will be removed
-                elif line[0]=='LANGUAGES': self.langs=[i.strip() for i in line[1].split(',')]
-                elif line[0]=='PROFS': self.profs=[i.strip() for i in line[1].split(',')]
-                elif line[0]=='FEATURES': self.features=[i.strip() for i in line[1].strip().split(',')]
-                elif line[0]=='SKILLS': self.skills=[i.strip() for i in line[1].strip().split(',')]
-                elif line[0]=='EXPERT': self.experts=[i.strip() for i in line[1].strip().split(',')]
-                elif line[0]=='SAVETHROWS': self.savethrows=[i.strip() for i in line[1].strip().split(',')]
-                elif line[0]=='COLOR': self.color=[int(i) for i in line[1].strip().split(',')]
-                elif line[0]=='FONTCOLOR': self.fontcolor=[int(i) for i in line[1].strip().split(',')]
-                elif line[0]=='FONTSIZE': self.fontsize=int(float(line[1].strip()))
-                elif line[0]=='CASTINGSTAT': self.caststat=line[1].strip()
-                else: self.bonusfeatures.append(line[0].strip())
+        if 'VERSION' in linesdict: self.version=linesdict['VERSION']
+        for line in linesdict['CHARACTER']:
+            line=line.strip()
+            if line=='': continue
+            line=line.split('=')
+            if line[0]=='NAME': self.name=line[1].strip()
+            elif line[0]=='CLASS': self.classes=line[1].strip()
+            elif line[0]=='HP': self.stats['HP']=int(line[1])
+            elif line[0]=='MAXHP': self.stats['MAXHP']=int(line[1])
+            elif line[0]=='TEMPHP': self.stats['TEMPHP']=int(line[1])
+            elif line[0]=='SPEED': self.stats['SPEED']=int(float(line[1]))
+            elif line[0]=='STR': self.stats['STR']=int(line[1])
+            elif line[0]=='DEX': self.stats['DEX']=int(line[1])
+            elif line[0]=='CON': self.stats['CON']=int(line[1])
+            elif line[0]=='INT': self.stats['INT']=int(line[1])
+            elif line[0]=='WIS': self.stats['WIS']=int(line[1])
+            elif line[0]=='CHA': self.stats['CHA']=int(line[1])
+            elif line[0]=='PRO': self.stats['PRO']=int(line[1])
+            elif line[0]=='GOLD': self.stats['GOLD']=float(line[1]) #to be removed in future versions as character.stats['GOLD'] will be removed
+            elif line[0]=='LANGUAGES': self.langs=[i.strip() for i in line[1].split(',')]
+            elif line[0]=='PROFS': self.profs=[i.strip() for i in line[1].split(',')]
+            elif line[0]=='FEATURES': self.features=[i.strip() for i in line[1].strip().split(',')]
+            elif line[0]=='SKILLS': self.skills=[i.strip() for i in line[1].strip().split(',')]
+            elif line[0]=='EXPERT': self.experts=[i.strip() for i in line[1].strip().split(',')]
+            elif line[0]=='SAVETHROWS': self.savethrows=[i.strip() for i in line[1].strip().split(',')]
+            elif line[0]=='COLOR': self.color=[int(i) for i in line[1].strip().split(',')]
+            elif line[0]=='FONTCOLOR': self.fontcolor=[int(i) for i in line[1].strip().split(',')]
+            elif line[0]=='FONTSIZE': self.fontsize=int(float(line[1].strip()))
+            elif line[0]=='CASTINGSTAT': self.caststat=line[1].strip()
+            else: self.bonusfeatures.append(line[0].strip())
         for i in self.stats: self.cstats[i]=self.stats[i]
         self.cstats['AC']=10#+statmod(self.cstats['DEX']) #now treated as bonus to AC to allow for AC changes when dex changes
         for skill in self.allskills: self.cstats[skill[0]]=0 #store bonuses to skills granted by items etc. Zero to start.
@@ -125,6 +126,7 @@ class character():
         else: self.notes=''
         self.show()
         self.update()
+        self.gui.setWindowTitle(self.filepath.split('/')[-1].split('\\')[-1])
     def show(self):
         self.gui=MainWindow(self)
         self.gui.show()
@@ -259,6 +261,7 @@ class character():
     #     self.update()
     def save(self,filepath):
         self.update()
+        self.gui.setWindowTitle(filepath.split('/')[-1].split('\\')[-1])
         self.filepath=filepath
         with open(filepath,'w') as file:
             file.write(f"%%CHARACTER\nNAME={self.name}\nCLASS={self.classes}\n")
@@ -290,7 +293,7 @@ class character():
             else: file.write(profsstring+'\n')
             file.write(f"COLOR={self.color[0]},{self.color[1]},{self.color[2]}\n")
             file.write(f"FONTCOLOR={self.fontcolor[0]},{self.fontcolor[1]},{self.fontcolor[2]}\n")
-            #file.write(f"FONTSIZE={self.fontsize}\n")
+            file.write(f"FONTSIZE={self.fontsize}\n")
             for bonusfeature in self.bonusfeatures: file.write(f'{bonusfeature}\n')
             file.write('\n%%ATTRIBUTES\n')
             for ability in self.abilitylist: file.write(ability.save())
@@ -300,15 +303,24 @@ class character():
             file.write('%%BACKPACK\n')
             for item in self.backpacklist:file.write(item.save())
             file.write(f"\n%%NOTES\n{self.gui.notes.toPlainText()}")
+            file.write(f"%%VERSION\n{version}")
+
+class NoWheelSpinBox(QSpinBox):
+    def wheelEvent(self, event): event.ignore()
 
 class MainWindow(QMainWindow):
     def __init__(self,c):
         super().__init__()
         self.c=c
-        self.resize(700,800) #700 is a guess for width, 800 perfectly fits all skills
+        self.setFont(c.fontsize)
+        self.resize(int(700*(c.fontsize/9)),int(800*(c.fontsize/9))) #700 is a guess for width, 800 perfectly fits all skills
+        # self.resize(700,800)
         self.setWindowTitle('Py5e')
 
         self.quitAllowed=False
+
+        saveShortcut=QShortcut(QKeySequence("Ctrl+S"), self)
+        saveShortcut.activated.connect(self.save)
 
         menu_bar=self.menuBar()
         file_menu=menu_bar.addMenu("File")
@@ -346,6 +358,9 @@ class MainWindow(QMainWindow):
         editCharacterAction=QAction("Character...",self)
         editCharacterAction.triggered.connect(self.editCharacter)
         editMenu.addAction(editCharacterAction)
+        editFontAction=QAction("Font...",self)
+        editFontAction.triggered.connect(self.editFont)
+        editMenu.addAction(editFontAction)
 
         rest_menu=menu_bar.addMenu("Rest")
         short_rest=QAction("Short Rest",self)
@@ -526,6 +541,7 @@ class MainWindow(QMainWindow):
         for spell in self.c.spellbooklist: spell.show()
         self.notes.setText(self.c.notes)
     def update(self):
+        self.setWindowTitle('*'+self.c.filepath.split('/')[-1].split('\\')[-1])
         self.displayNameClass.setText(f"{self.c.name}\n{self.c.classes}")
         self.displayHP.setText(f"HP: {self.c.stats['HP']}/{self.c.stats['MAXHP']}")
         if self.c.stats['TEMPHP']>0: self.displayTempHP.setText(f"{self.c.stats['TEMPHP']:+d}")
@@ -566,6 +582,7 @@ class MainWindow(QMainWindow):
             item=self.langLayout.takeAt(0)
             widget=item.widget()
             if widget is not None: widget.deleteLater()
+        self.langLayout.addWidget(QLabel('Languages:',alignment=Qt.AlignmentFlag.AlignCenter))
         for lang in self.c.langs: self.langLayout.addWidget(QLabel(lang))
         while self.profLayout.count():
             item=self.profLayout.takeAt(0)
@@ -640,12 +657,24 @@ class MainWindow(QMainWindow):
         dialog=getSpell()
         if dialog.exec()==QDialog.Accepted:
             self.c.spellbooklist.append(spell(dialog.getData(),self.c))
-            print(self.c.spellbooklist[-1].lookup)
             self.c.spellbooklist[-1].show()
             self.c.update()
     def editCharacter(self):
         dialog=getStats(self.c)
         if dialog.exec()==QDialog.Accepted: dialog.getData()
+    def editFont(self):
+        fontSize,ok=QInputDialog.getInt(self,"Set Font Size",'Enter Font Size',value=QApplication.font().pointSize(),minValue=1,maxValue=200)
+        if ok: 
+            self.setFont(fontSize)
+            c.fontsize=fontSize
+            self.c.update()
+    def setFont(self,fontsize):
+        font=QApplication.font()
+        font.setPointSize(fontsize)
+        QApplication.setFont(font)
+        # temp=self.menuBar()
+        # temp.setFont(font)
+        # for menu in temp.findChildren(QWidget): menu.setFont(font)
 
 class getStats(QDialog):
     def __init__(self,c):
@@ -662,9 +691,9 @@ class getStats(QDialog):
         LRLayout.addLayout(formLayoutR)
         self.name=QLineEdit(text=self.c.name)
         self.classes=QLineEdit(text=self.c.classes)
-        self.maxhp=QSpinBox(minimum=0,maximum=999999,value=self.c.stats['MAXHP'])
-        self.speed=QSpinBox(minimum=0,maximum=999999,value=self.c.stats['SPEED'])
-        self.abscores={i:QSpinBox(minimum=0,maximum=999999,value=self.c.stats[i]) for i in ['STR','DEX','CON','INT','WIS','CHA','PRO']}
+        self.maxhp=NoWheelSpinBox(minimum=0,maximum=999999,value=self.c.stats['MAXHP'])
+        self.speed=NoWheelSpinBox(minimum=0,maximum=999999,value=self.c.stats['SPEED'])
+        self.abscores={i:NoWheelSpinBox(minimum=0,maximum=999999,value=self.c.stats[i]) for i in ['STR','DEX','CON','INT','WIS','CHA','PRO']}
         self.savethrows={i:QCheckBox() for i in ['STR','DEX','CON','INT','WIS','CHA']}
         for i in ['STR','DEX','CON','INT','WIS','CHA']:
             if i in self.c.savethrows: self.savethrows[i].setChecked(True)
@@ -722,7 +751,6 @@ class getStats(QDialog):
         self.c.update()
         return
 
-
 class getSpell(QDialog):
     def __init__(self):
         super().__init__()
@@ -733,8 +761,8 @@ class getSpell(QDialog):
         self.name=QLineEdit()
         self.lookup=QComboBox()
         self.lookup.addItems(['']+sorted([i for i in masterspellsdict]))
-        self.level=QSpinBox(minimum=0,maximum=9,value=0)
-        self.description=QLineEdit()
+        self.level=NoWheelSpinBox(minimum=0,maximum=9,value=0)
+        self.description=QTextEdit()
         formLayout.addRow('Display Name:',self.name)
         formLayout.addRow('Level',self.level)
         formLayout.addRow('Lookup Spell',self.lookup)
@@ -750,7 +778,7 @@ class getSpell(QDialog):
             return 
         self.accept()
     def getData(self):
-        return {'NAME':self.name.text().strip(),'LEVEL':self.level.value(),'LOOKUP':self.lookup.currentText(),'TEXT':self.description.text().strip()}
+        return {'NAME':self.name.text().strip(),'LEVEL':self.level.value(),'LOOKUP':self.lookup.currentText(),'TEXT':self.description.toPlainText().strip()}
 
 class getFeature(QDialog):
     def __init__(self):
@@ -761,7 +789,7 @@ class getFeature(QDialog):
         formLayout=QFormLayout()
         self.name=QLineEdit()
         self.bonuses=QLineEdit()
-        self.description=QLineEdit()
+        self.description=QTextEdit()
         formLayout.addRow('Name:',self.name)
         formLayout.addRow('Bonuses (e.g. AC:3, STR:2):',self.bonuses)
         formLayout.addRow('Description',self.description)
@@ -783,7 +811,7 @@ class getFeature(QDialog):
             return 
         self.accept()
     def getData(self):
-        return {'NAME':self.name.text().strip(),'MODS':self.bonuses.text().strip(),'TEXT':self.description.text().strip()}
+        return {'NAME':self.name.text().strip(),'MODS':self.bonuses.text().strip(),'TEXT':self.description.toPlainText().strip()}
 
 class getItem(QDialog):
     def __init__(self):
@@ -793,9 +821,11 @@ class getItem(QDialog):
         self.setLayout(mainLayout)
         formLayout=QFormLayout()
         self.name=QLineEdit()
-        self.number=QSpinBox(minimum=-2147483648,maximum=2147483647,value=0)
+        self.number=NoWheelSpinBox(minimum=-2147483648,maximum=2147483647,value=0)
+        self.text=QTextEdit()
         formLayout.addRow('Name:',self.name)
         formLayout.addRow('Quantity:',self.number)
+        formLayout.addRow('Description:',self.text)
         mainLayout.addLayout(formLayout)
         buttons=QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.verifyData)
@@ -805,9 +835,12 @@ class getItem(QDialog):
         if len(self.name.text())<1: 
             QMessageBox.warning(self,'Invalid Name','No name provided.')
             return 
+        if ':' in self.name.text(): 
+            QMessageBox.warning(self,'Invalid Name','Name cannot contain ":".')
+            return 
         self.accept()
     def getData(self):
-        return f"{self.name.text()}:{self.number.value()}"
+        return f"{self.name.text()}:{self.number.value()}:{self.text.toPlainText().strip().replace('\n','\\')}"
 
 class getAbility(QDialog):
     def __init__(self,c):
@@ -824,12 +857,13 @@ class getAbility(QDialog):
         self.resttype.addItem('Short Rest','SR')
         self.resttype.addItem('Long Rest','LR')
         self.resttype.addItem('Day','Day')
-        self.description=QLineEdit()
+        self.description=QTextEdit()
         self.spellslot=QCheckBox()
         formLayout.addRow('Name:',self.name)
         formLayout.addRow('Maximum Uses (optional, enter an integer or a skill/ability score name)',self.maxuse)
         formLayout.addRow('Resets on:',self.resttype)
         formLayout.addRow('Spellslot?',self.spellslot)
+        formLayout.addRow('Description:',self.description)
         mainLayout.addLayout(formLayout)
         buttons=QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.verifyData)
@@ -850,7 +884,7 @@ class getAbility(QDialog):
                     return 
         self.accept()
     def getData(self):
-        return {'NAME':self.name.text().strip(),'MAX':self.name.text().strip(),'REST':self.resttype.currentData(),'SPELLSLOT':'y' if self.spellslot.isChecked() else 'n'}
+        return {'NAME':self.name.text().strip(),'MAX':self.name.text().strip(),'REST':self.resttype.currentData(),'SPELLSLOT':'y' if self.spellslot.isChecked() else 'n','TEXT':self.description.toPlainText().strip()}
 
 class getEquip(QDialog):
     def __init__(self,c):
@@ -862,19 +896,21 @@ class getEquip(QDialog):
         formLayout=QFormLayout()
         self.name=QLineEdit()
         self.bonuses=QLineEdit()
-        self.maxdex=QSpinBox()
+        self.maxdex=NoWheelSpinBox()
         self.maxdexcheck=QCheckBox()
         self.tohit=QLineEdit()
         self.scaling=QComboBox()
         self.scaling.addItems(['','STR','DEX','CON','INT','WIS','CHA'])
         self.prof=QCheckBox()
+        self.description=QTextEdit()
         formLayout.addRow('Name:',self.name)
         formLayout.addRow('Bonuses (e.g. AC:3, STR:2):',self.bonuses)
-        formLayout.addRow('Limits Max DEX Mod?:',self.maxdexcheck)
+        formLayout.addRow('Limits Max DEX Mod?',self.maxdexcheck)
         formLayout.addRow('Maximum DEX Mod:',self.maxdex)
-        formLayout.addRow('To Hit/Damage (e.g. 1/1d6+1)',self.tohit)
-        formLayout.addRow('Scaling',self.scaling)
+        formLayout.addRow('To Hit/Damage (e.g. 1/1d6+1):',self.tohit)
+        formLayout.addRow('Scaling:',self.scaling)
         formLayout.addRow('Proficient?',self.prof)
+        formLayout.addRow('Description:',self.description)
         mainLayout.addLayout(formLayout)
         buttons=QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.verifyData)
@@ -903,6 +939,7 @@ class getEquip(QDialog):
         else: outdict['PROF']="NO"
         if self.maxdexcheck.isChecked(): outdict['MAXDEX']=self.maxdex.value()
         if self.scaling.currentText()!='': outdict['SCALING']=self.scaling.currentText()
+        if self.description.toPlainText().strip()!='': outdict['TEXT']=self.description.toPlainText().strip()
         return outdict
     
 class feature():
@@ -911,7 +948,6 @@ class feature():
         if 'NAME' in featdict: self.name=featdict['NAME']
         else: self.name='?'
         if 'MODS' in featdict: 
-            # print(featdict['MODS'])
             if featdict['MODS']=='':self.mods=[]
             else:                 
                 self.mods=featdict['MODS']
@@ -919,7 +955,7 @@ class feature():
                 for mod in self.mods: mod[1]=int(mod[1])
         else: self.mods=[]
         if 'TEXT' in featdict: 
-            self.text=featdict['TEXT']
+            self.text=featdict['TEXT'].replace('\n','\\')
             self.description=featdict['TEXT'].replace('\\','\n')
         else: 
             self.description='(No Description)'
@@ -992,21 +1028,28 @@ class ability():
             if 'y' in abilitydict['SPELLSLOT'].lower(): self.spellslot=True
             else: self.spellslot=False
         else: self.spellslot=False
+        if 'TEXT' in abilitydict: 
+            self.text=abilitydict['TEXT'].replace('\n','\\')
+            self.description=abilitydict['TEXT'].replace('\\','\n')
+        else: 
+            self.description='(No Description)'
+            self.text=''
     def update(self):
         try: self.maxnum=int(self.maxnumraw)
         except ValueError: self.maxnum=max(1,self.c.cstats[self.maxnumraw+'bonus']) if self.maxnumraw in [i[0] for i in self.c.allskills] else (max(1,statmod(self.c.cstats[self.maxnumraw])) if self.maxnumraw in ['STR','DEX','CON','INT','WIS','CHA'] else (self.c.cstats[self.maxnumraw] if self.maxnumraw=='PRO' else 0))
         if self.maxnum>0: 
-            if self.spellslot: self.spellgui.button.setText(f"{self.numleft}/{self.maxnum}: {self.name}")
-            self.gui.button.setText(f"{self.numleft}/{self.maxnum}: {self.name}")
+            if self.spellslot: self.spellgui.useButton.setText(f"{self.numleft}/{self.maxnum}: {self.name}")
+            self.gui.infoButton.setText(f"{self.numleft}/{self.maxnum}: {self.name}")
         else: 
-            if self.spellslot: self.spellgui.button.setText(f"{self.numleft}: {self.name}")
-            self.gui.button.setText(f"{self.numleft}: {self.name}")
+            if self.spellslot: self.spellgui.useButton.setText(f"{self.numleft}: {self.name}")
+            self.gui.infoButton.setText(f"{self.numleft}: {self.name}")
         if self.numleft==0: 
-            if self.spellslot: self.spellgui.button.setEnabled(False)
-            self.gui.button.setEnabled(False)
+            if self.spellslot: self.spellgui.useButton.setEnabled(False)
+            self.gui.useButton.setEnabled(False)
         else: 
-            if self.spellslot: self.spellgui.button.setEnabled(True)
-            self.gui.button.setEnabled(True)
+            if self.spellslot: self.spellgui.useButton.setEnabled(True)
+            self.gui.useButton.setEnabled(True)
+        self.c.update()
     def use(self):
         if self.numleft>0: self.numleft-=1
         self.update()
@@ -1024,11 +1067,9 @@ class ability():
         if self.spellslot: self.spellgui.delete()
         self.gui.delete()
         self.c.abilitylist.remove(self)
-        # if self.spellslot: self.frame2.destroy()
-        # else: pass
     def save(self):
-        if self.spellslot: return f"%ABILITY\nNAME={self.name}\nMAX={self.maxnum}\nREMAINING={self.numleft}\nREST={self.resttype}\nSPELLSLOT=YES\n\n"
-        else: return f"%ABILITY\nNAME={self.name}\nMAX={self.maxnumraw}\nREMAINING={self.numleft}\nREST={self.resttype}\nSPELLSLOT=NO\n\n"
+        if self.spellslot: return f"%ABILITY\nNAME={self.name}\nMAX={self.maxnum}\nREMAINING={self.numleft}\nREST={self.resttype}\nSPELLSLOT=YES\nTEXT={self.text}\n\n"
+        else: return f"%ABILITY\nNAME={self.name}\nMAX={self.maxnumraw}\nREMAINING={self.numleft}\nREST={self.resttype}\nSPELLSLOT=NO\nTEXT={self.text}\n\n"
 
 class abilityWidget(QWidget):
     def __init__(self,ability,spellslot=False):
@@ -1037,20 +1078,26 @@ class abilityWidget(QWidget):
         self.layout=QHBoxLayout()
         self.layout.setContentsMargins(0,0,0,0)
         self.setLayout(self.layout)
-        self.button=QPushButton(text='?',clicked=self.use)
         self.unuseButton=QPushButton(text='+',clicked=self.unuse)
         self.unuseButton.setFixedWidth(self.unuseButton.sizeHint().height())
         self.layout.addWidget(self.unuseButton)
-        self.layout.addWidget(self.button)            
         if spellslot: 
-            self.button.setFlat(True)
-            self.button.setStyleSheet("border: none; background: none;")
+            # self.useButton.setFlat(True)
+            # self.uesButton.setStyleSheet("border: none;")# background: none;")
+            self.useButton=QPushButton(text='?',clicked=self.use)
+            self.layout.addWidget(self.useButton)
             self.guiLocation=self.ability.c.gui.spellLVLLayouts[ability.name[0]]
             self.guiLocation.insertWidget(0,self)
         else: 
+            self.useButton=QPushButton(text='-',clicked=self.use)
+            self.useButton.setFixedWidth(self.unuseButton.sizeHint().height())
+            self.infoButton=QPushButton(text='?',clicked=self.showinfo)
             self.delButton=QPushButton(text='\u00d7',clicked=self.senddelete)
             self.delButton.setFixedWidth(self.delButton.sizeHint().height())
+            self.layout.addWidget(self.useButton)
+            self.layout.addWidget(self.infoButton)
             self.layout.addWidget(self.delButton)
+            
             self.guiLocation=self.ability.c.gui.cAbilityLayout
             self.guiLocation.insertWidget(self.guiLocation.count()-1,self)
     def use(self):
@@ -1059,6 +1106,9 @@ class abilityWidget(QWidget):
         self.ability.unuse()
     def senddelete(self):
         self.ability.delete()
+    def showinfo(self):
+        self.dialog=PopupDialog(self.ability.name,self.ability.description.replace('\\','\n'))
+        self.dialog.show()
     def delete(self):
         self.guiLocation.removeWidget(self)
         self.setParent(None)
@@ -1088,6 +1138,12 @@ class equipment():
         else: self.prof=False  
         if 'MAXDEX' in equipdict: self.maxdex=int(equipdict['MAXDEX'])
         else: self.maxdex=False
+        if 'TEXT' in equipdict: 
+            self.text=equipdict['TEXT'].replace('\n','\\')
+            self.description=equipdict['TEXT'].replace('\\','\n')
+        else: 
+            self.description='(No Description)'
+            self.text=''
         if self.equipped: 
             for mod in self.mods:
                 if mod[0]=='AC' and type(self.maxdex)==int and (self.maxdex<statmod(self.c.cstats['DEX']) or self.maxdex==0): #heavy armor, maxdex==0 and negative dex mod is not counted
@@ -1108,9 +1164,9 @@ class equipment():
             else: 
                 if self.scaling.lower() not in 'no': tempstring+=f", To Hit:{self.hitdamage[0]+statmod(self.c.cstats[self.scaling]):+d}, {self.hitdamage[1]}{statmod(self.c.cstats[self.scaling]):+d}"
                 else: tempstring+=f", To Hit:{self.hitdamage[0]:+d}, {self.hitdamage[1]}"
-        if self.equipped: tempstring = '\u2611 '+tempstring
-        else: tempstring = '\u2610 '+tempstring
-        self.gui.togglebutton.setText(tempstring)
+        if self.equipped: self.gui.togglebutton.setText('\u2611')
+        else: self.gui.togglebutton.setText('\u2610')
+        self.gui.infobutton.setText(tempstring)
         if upc: 
             self.c.update()
             self.update()
@@ -1151,8 +1207,8 @@ class equipment():
         if self.scaling!='no':tempstring+=f"\nSCALING={self.scaling}"
         if self.prof: tempstring+="\nPROF=YES"
         if type(self.maxdex)==int: tempstring+=f"\nMAXDEX={self.maxdex:+d}"
-        if self.equipped: return tempstring+'\nEQUIPPED=YES\n\n'
-        else: return tempstring+'\n\n'
+        if self.equipped: tempstring+='\nEQUIPPED=YES'
+        return tempstring+f'\nTEXT={self.text}\n\n'
 
 class equipWidget(QWidget):
     def __init__(self,equip):
@@ -1161,8 +1217,11 @@ class equipWidget(QWidget):
         self.layout=QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layout)
-        self.togglebutton=QPushButton(text=self.equip.name,clicked=self.toggle)
+        self.togglebutton=QPushButton(text='[?]',clicked=self.toggle)
+        self.togglebutton.setFixedWidth(self.togglebutton.sizeHint().height())
         self.layout.addWidget(self.togglebutton)
+        self.infobutton=QPushButton(text=self.equip.name,clicked=self.showinfo)
+        self.layout.addWidget(self.infobutton)
         self.delButton=QPushButton(text='\u00d7',clicked=self.delete)
         self.delButton.setFixedWidth(self.delButton.sizeHint().height())
         self.layout.addWidget(self.delButton)
@@ -1174,18 +1233,28 @@ class equipWidget(QWidget):
         self.equip.delete()
     def toggle(self):
         self.equip.toggle()
+    def showinfo(self):
+        self.dialog=PopupDialog(self.equip.name,self.equip.description.replace('\\','\n'))
+        self.dialog.show()
 
 class item():
     def __init__(self,bpline,c):
         self.c=c
-        self.quantity=int(bpline.split(':')[-1])
+        self.quantity=int(bpline.split(':')[1])
         self.name=bpline.split(':')[0].strip()
+        if len(bpline.split(':'))>2: 
+            self.text=':'.join(bpline.split(':')[2:]).strip().replace('\n','\\')
+            self.description=self.text.replace('\n','\\').strip()
+            if len(self.description)==0: self.description='(No Description)'
+        else: 
+            self.text=''
+            self.description='(No Description)'
     def show(self):
         self.gui=itemWidget(self)
     def delete(self):
         self.c.backpacklist.remove(self)
     def save(self):
-        return f"{self.name}:{self.quantity}\n"
+        return f"{self.name}:{self.quantity}:{self.text}\n"
     
 class itemWidget(QWidget):
     def __init__(self,item):
@@ -1194,24 +1263,25 @@ class itemWidget(QWidget):
         self.layout=QHBoxLayout()
         self.layout.setContentsMargins(0,0,0,0)
         self.setLayout(self.layout)
-        self.quantity=QSpinBox(minimum=-2147483648,maximum=2147483647,value=self.item.quantity)
+        self.quantity=NoWheelSpinBox(minimum=-2147483648,maximum=2147483647,value=self.item.quantity)
         self.quantity.valueChanged.connect(self.changeValue)
         self.quantity.setFixedWidth(self.quantity.sizeHint().height()*5)
         self.layout.addWidget(self.quantity)
-        self.layout.addWidget(QLabel(self.item.name))
+        self.layout.addWidget(QPushButton(self.item.name,clicked=self.showinfo))
         self.delButton=QPushButton(text='\u00d7',clicked=self.delete)
         self.delButton.setFixedWidth(self.delButton.sizeHint().height())
         self.layout.addWidget(self.delButton)
         self.item.c.gui.itemLayout.insertWidget(self.item.c.gui.itemLayout.count()-1,self)
     def changeValue(self,value):
         self.item.quantity=value
-        # print(self.item.quantity) #debug only
+    def showinfo(self):
+        self.dialog=PopupDialog(self.item.name,self.item.description.replace('\\','\n'))
+        self.dialog.show()
     def delete(self):
         self.item.c.gui.itemLayout.removeWidget(self)
         self.setParent(None)
         self.deleteLater()
         self.item.delete()
-
 
 class spell():
     def __init__(self,spelldict,c):
@@ -1245,13 +1315,12 @@ class spell():
         if 'PREP' in spelldict: self.prep=bool(int(spelldict['PREP']))
         else: self.prep=False
         if 'TEXT' in spelldict: 
-            self.text=spelldict['TEXT']
+            self.text=spelldict['TEXT'].replace('\n','\\')
             self.description+=spelldict['TEXT'].replace('\\','\n') 
         else: self.text=''
     def update(self):
-        if not self.prep: tempstring='\u2610'
-        else: tempstring='\u2611'
-        self.gui.togglebutton.setText(tempstring)
+        if not self.prep: self.gui.togglebutton.setText('\u2610')
+        else: self.gui.togglebutton.setText('\u2611')
     def toggle(self):
         if self.prep: self.prep=False
         else: self.prep=True
@@ -1358,15 +1427,9 @@ class CharacterSelectWindow(QMainWindow):
     def __init__(self,updatestatus):
         QMainWindow.__init__(self)
         self.setWindowTitle("Py5e")
-        # Menu
-        self.menu = self.menuBar()
-        self.file_menu = self.menu.addMenu("File")
-        # Exit QAction
-        exit_action = QAction("Exit", self)
-        exit_action.setShortcut(QKeySequence.Quit)
-        exit_action.triggered.connect(self.close)
-        self.file_menu.addAction(exit_action)
-
+        font=QApplication.font()
+        font.setPointSize(10)
+        QApplication.setFont(font)
         layout=QVBoxLayout()
         message=QLabel(f'Select a Character')
         layout.addWidget(message)
