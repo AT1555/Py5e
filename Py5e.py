@@ -1,5 +1,5 @@
 from PySide6.QtGui import QAction, QKeySequence, QShortcut
-from PySide6.QtWidgets import QMainWindow, QApplication, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QWidget, QTabWidget, QInputDialog, QScrollArea, QFrame, QFileDialog, QMessageBox, QDialog, QSpinBox, QTextEdit, QFormLayout, QLineEdit, QDialogButtonBox, QCheckBox, QComboBox
+from PySide6.QtWidgets import QMainWindow, QApplication, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QWidget, QTabWidget, QInputDialog, QScrollArea, QFrame, QFileDialog, QMessageBox, QDialog, QSpinBox, QTextEdit, QFormLayout, QLineEdit, QDialogButtonBox, QCheckBox, QComboBox, QMenu
 from PySide6.QtCore import Qt
 import sys
 from glob import glob
@@ -8,7 +8,7 @@ import requests
 import json
 from os import getcwd
 
-version='2026_03_08'
+version='2026_03_10'
 
 class character():
     def __init__(self): #initalize blank character
@@ -361,6 +361,9 @@ class MainWindow(QMainWindow):
         editFontAction=QAction("Font...",self)
         editFontAction.triggered.connect(self.editFont)
         editMenu.addAction(editFontAction)
+        editRemoveAction=QAction("Remove...",self)
+        editRemoveAction.triggered.connect(self.editRemove)
+        editMenu.addAction(editRemoveAction)
 
         rest_menu=menu_bar.addMenu("Rest")
         short_rest=QAction("Short Rest",self)
@@ -675,6 +678,9 @@ class MainWindow(QMainWindow):
         # temp=self.menuBar()
         # temp.setFont(font)
         # for menu in temp.findChildren(QWidget): menu.setFont(font)
+    def editRemove(self):
+        self.removedialog=PopupDialog('Remove...','To remove an Ability, Equipment, Feature, Item, or Spell, simply Right-Click that object and select "Delete" from the drop-down menu.')
+        self.removedialog.show()
 
 class getStats(QDialog):
     def __init__(self,c):
@@ -985,11 +991,16 @@ class featureWidget(QWidget):
         self.layout=QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layout)
-        self.delButton=QPushButton(text='\u00d7',clicked=self.delete)
-        self.delButton.setFixedWidth(self.delButton.sizeHint().height())
-        self.layout.addWidget(self.delButton)
         self.layout.addWidget(QPushButton(text=self.feat.name,clicked=self.showinfo))
         self.feat.c.gui.featureLayout.insertWidget(self.feat.c.gui.featureLayout.count(),self)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.showContextMenu)
+    def showContextMenu(self,pos):
+        context_menu=QMenu(self)
+        actionDelete=QAction("Delete",self)
+        actionDelete.triggered.connect(self.delete)
+        context_menu.addAction(actionDelete)
+        context_menu.exec(self.mapToGlobal(pos))
     def delete(self):
         self.feat.c.gui.featureLayout.removeWidget(self)
         self.setParent(None)
@@ -1092,14 +1103,18 @@ class abilityWidget(QWidget):
             self.useButton=QPushButton(text='-',clicked=self.use)
             self.useButton.setFixedWidth(self.unuseButton.sizeHint().height())
             self.infoButton=QPushButton(text='?',clicked=self.showinfo)
-            self.delButton=QPushButton(text='\u00d7',clicked=self.senddelete)
-            self.delButton.setFixedWidth(self.delButton.sizeHint().height())
             self.layout.addWidget(self.useButton)
             self.layout.addWidget(self.infoButton)
-            self.layout.addWidget(self.delButton)
-            
             self.guiLocation=self.ability.c.gui.cAbilityLayout
             self.guiLocation.insertWidget(self.guiLocation.count()-1,self)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.showContextMenu)
+    def showContextMenu(self,pos):
+        context_menu=QMenu(self)
+        actionDelete=QAction("Delete",self)
+        actionDelete.triggered.connect(self.senddelete)
+        context_menu.addAction(actionDelete)
+        context_menu.exec(self.mapToGlobal(pos))
     def use(self):
         self.ability.use()
     def unuse(self):
@@ -1222,10 +1237,15 @@ class equipWidget(QWidget):
         self.layout.addWidget(self.togglebutton)
         self.infobutton=QPushButton(text=self.equip.name,clicked=self.showinfo)
         self.layout.addWidget(self.infobutton)
-        self.delButton=QPushButton(text='\u00d7',clicked=self.delete)
-        self.delButton.setFixedWidth(self.delButton.sizeHint().height())
-        self.layout.addWidget(self.delButton)
         self.equip.c.gui.cEquipLayout.insertWidget(self.equip.c.gui.cEquipLayout.count(),self)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.showContextMenu)
+    def showContextMenu(self,pos):
+        context_menu=QMenu(self)
+        actionDelete=QAction("Delete",self)
+        actionDelete.triggered.connect(self.delete)
+        context_menu.addAction(actionDelete)
+        context_menu.exec(self.mapToGlobal(pos))
     def delete(self):
         self.equip.c.gui.cEquipLayout.removeWidget(self)
         self.setParent(None)
@@ -1268,10 +1288,15 @@ class itemWidget(QWidget):
         self.quantity.setFixedWidth(self.quantity.sizeHint().height()*5)
         self.layout.addWidget(self.quantity)
         self.layout.addWidget(QPushButton(self.item.name,clicked=self.showinfo))
-        self.delButton=QPushButton(text='\u00d7',clicked=self.delete)
-        self.delButton.setFixedWidth(self.delButton.sizeHint().height())
-        self.layout.addWidget(self.delButton)
         self.item.c.gui.itemLayout.insertWidget(self.item.c.gui.itemLayout.count()-1,self)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.showContextMenu)
+    def showContextMenu(self,pos):
+        context_menu=QMenu(self)
+        actionDelete=QAction("Delete",self)
+        actionDelete.triggered.connect(self.delete)
+        context_menu.addAction(actionDelete)
+        context_menu.exec(self.mapToGlobal(pos))
     def changeValue(self,value):
         self.item.quantity=value
     def showinfo(self):
@@ -1328,6 +1353,8 @@ class spell():
     def show(self):
         self.gui=spellWidget(self)
         self.update()
+    def delete(self):
+        self.c.spellbooklist.remove(self)
     def save(self):
         return f"%SPELL\nNAME={self.name}\nLOOKUP={self.lookup}\nLEVEL={self.level}\nPREP={int(self.prep)}\nTEXT={self.text}\n\n"
 
@@ -1342,15 +1369,20 @@ class spellWidget(QWidget):
         self.togglebutton.setFixedWidth(self.togglebutton.sizeHint().height())
         self.layout.addWidget(self.togglebutton)
         self.layout.addWidget(QPushButton(text=self.spell.name,clicked=self.showinfo))
-        # self.delButton=QPushButton(text='\u00d7',clicked=self.delete)
-        # self.delButton.setFixedWidth(self.delButton.sizeHint().height())
-        # self.layout.addWidget(self.delButton)
         self.spell.c.gui.spellLVLLayouts[(str(self.spell.level))].insertWidget(self.spell.c.gui.spellLVLLayouts[(str(self.spell.level))].count(),self)
-    # def delete(self):
-    #     self.spell.c.gui.spellsCLayout.removeWidget(self)
-    #     self.setParent(None)
-    #     self.deleteLater()
-    #     # self.spell.delete()
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.showContextMenu)
+    def showContextMenu(self,pos):
+        context_menu=QMenu(self)
+        actionDelete=QAction("Delete",self)
+        actionDelete.triggered.connect(self.delete)
+        context_menu.addAction(actionDelete)
+        context_menu.exec(self.mapToGlobal(pos))
+    def delete(self):
+        self.spell.c.gui.spellsCLayout.removeWidget(self)
+        self.setParent(None)
+        self.deleteLater()
+        self.spell.delete()
     def toggle(self):
         self.spell.toggle()
     def showinfo(self):
