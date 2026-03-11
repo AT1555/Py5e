@@ -8,7 +8,7 @@ import requests
 import json
 from os import getcwd
 
-version='2026_03_10'
+version='2026_03_11'
 
 class character():
     def __init__(self): #initalize blank character
@@ -126,7 +126,7 @@ class character():
         else: self.notes=''
         self.show()
         self.update()
-        self.gui.setWindowTitle(self.filepath.split('/')[-1].split('\\')[-1])
+        if self.filepath is not None: self.gui.setWindowTitle(self.filepath.split('/')[-1].split('\\')[-1])
     def show(self):
         self.gui=MainWindow(self)
         self.gui.show()
@@ -544,7 +544,7 @@ class MainWindow(QMainWindow):
         for spell in self.c.spellbooklist: spell.show()
         self.notes.setText(self.c.notes)
     def update(self):
-        self.setWindowTitle('*'+self.c.filepath.split('/')[-1].split('\\')[-1])
+        if self.c.filepath is not None: self.setWindowTitle('*'+self.c.filepath.split('/')[-1].split('\\')[-1])
         self.displayNameClass.setText(f"{self.c.name}\n{self.c.classes}")
         self.displayHP.setText(f"HP: {self.c.stats['HP']}/{self.c.stats['MAXHP']}")
         if self.c.stats['TEMPHP']>0: self.displayTempHP.setText(f"{self.c.stats['TEMPHP']:+d}")
@@ -1512,6 +1512,8 @@ if __name__=="__main__":
     print(filename)
     app=QApplication()
     c=character()
-    if filename is None: c.show()
+    if filename is None: 
+        c.show()
+        c.gui.editCharacter()
     else: c.load(filename)
     app.exec()
