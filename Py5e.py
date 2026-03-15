@@ -8,43 +8,30 @@ import requests
 import json
 from os import getcwd
 
-version='2026_03_11'
+version='2026_03_15'
 
 class character():
     def __init__(self): #initalize blank character
         self.filepath=None
-        self.bonusfeatures=[]
-        self.features=[]
+        self.name='NAME'
+        self.classes='CLASS'
+        self.stats={'HP':0,'MAXHP':0,'TEMPHP':0,'SPEED':30,'STR':10,'DEX':10,'CON':10,'INT':10,'WIS':10,'CHA':10,'PRO':0}
         self.langs=[]
         self.profs=[]
         self.skills=[]
         self.experts=[]
         self.savethrows=[]
         self.caststat=''
-        self.stats={}
         self.notes=''
-        self.color=[236,230,220]
-        self.fontcolor=[0,0,0]
-        self.fontsize=10
-        self.name='NAME'
-        self.classes='CLASS'
-        self.stats['HP']=0
-        self.stats['MAXHP']=0
-        self.stats['TEMPHP']=0
-        self.stats['SPEED']=30
-        self.stats['STR']=10
-        self.stats['DEX']=10
-        self.stats['CON']=10
-        self.stats['INT']=10
-        self.stats['WIS']=10
-        self.stats['CHA']=10
-        self.stats['PRO']=0
         self.featurelist=[]
         self.spellist=[]
         self.abilitylist=[]
         self.equiplist=[]
         self.backpacklist=[]
         self.spellbooklist=[]
+        self.color=[236,230,220]
+        self.fontcolor=[0,0,0]
+        self.fontsize=10
         self.allskills=sorted([['Investigation (P)','INT'],['Insight (P)','WIS'],['Perception (P)','WIS'],['Initiative', 'DEX'],['Athletics','STR'],['Acrobatics','DEX'],['Sleight of Hand','DEX'],['Stealth','DEX'],['Arcana','INT'],['History','INT'],['Investigation','INT'],['Nature','INT'],['Religion','INT'],['Animal Handling','WIS'],['Insight','WIS'],['Medicine','WIS'],['Perception','WIS'],['Survival','WIS'],['Deception','CHA'],['Intimidation','CHA'],['Performance','CHA'],['Persuasion','CHA']])
         self.cstats={i:self.stats[i] for i in self.stats} #make dictionary of current stats that can be modified by items etc
         self.cstats['AC']=10#+statmod(self.cstats['DEX']) #now treated as bonus to AC to allow for AC changes when dex changes
@@ -52,7 +39,7 @@ class character():
         for skill in self.allskills: 
             self.cstats[skill[0]]=0 #store bonuses to skills granted by items etc. Zero to start.
             self.cstats[skill[0]+'bonus']=0 #store the actual bonus with ability scores, skills, and expertises (and Jack of All Trades) for easy lookup
-        self.shown=False #flag to check if the sheet has been shown yet, added so that abilites cannot update() without rendering buttons yet.
+        self.gui=None
     def load(self,filepath):
         self.filepath=filepath
         with open(filename,'r') as file:
@@ -70,21 +57,11 @@ class character():
             line=line.split('=')
             if line[0]=='NAME': self.name=line[1].strip()
             elif line[0]=='CLASS': self.classes=line[1].strip()
-            elif line[0]=='HP': self.stats['HP']=int(line[1])
-            elif line[0]=='MAXHP': self.stats['MAXHP']=int(line[1])
-            elif line[0]=='TEMPHP': self.stats['TEMPHP']=int(line[1])
+            elif line[0] in ['HP','MAXHP','TEMPHP','STE','DEX','CON','INT','WIS','CHA','PRO']: self.stats[line[0]]=int(line[1])
             elif line[0]=='SPEED': self.stats['SPEED']=int(float(line[1]))
-            elif line[0]=='STR': self.stats['STR']=int(line[1])
-            elif line[0]=='DEX': self.stats['DEX']=int(line[1])
-            elif line[0]=='CON': self.stats['CON']=int(line[1])
-            elif line[0]=='INT': self.stats['INT']=int(line[1])
-            elif line[0]=='WIS': self.stats['WIS']=int(line[1])
-            elif line[0]=='CHA': self.stats['CHA']=int(line[1])
-            elif line[0]=='PRO': self.stats['PRO']=int(line[1])
             elif line[0]=='GOLD': self.stats['GOLD']=float(line[1]) #to be removed in future versions as character.stats['GOLD'] will be removed
             elif line[0]=='LANGUAGES': self.langs=[i.strip() for i in line[1].split(',')]
             elif line[0]=='PROFS': self.profs=[i.strip() for i in line[1].split(',')]
-            elif line[0]=='FEATURES': self.features=[i.strip() for i in line[1].strip().split(',')]
             elif line[0]=='SKILLS': self.skills=[i.strip() for i in line[1].strip().split(',')]
             elif line[0]=='EXPERT': self.experts=[i.strip() for i in line[1].strip().split(',')]
             elif line[0]=='SAVETHROWS': self.savethrows=[i.strip() for i in line[1].strip().split(',')]
@@ -92,7 +69,7 @@ class character():
             elif line[0]=='FONTCOLOR': self.fontcolor=[int(i) for i in line[1].strip().split(',')]
             elif line[0]=='FONTSIZE': self.fontsize=int(float(line[1].strip()))
             elif line[0]=='CASTINGSTAT': self.caststat=line[1].strip()
-            else: self.bonusfeatures.append(line[0].strip())
+            else: pass
         for i in self.stats: self.cstats[i]=self.stats[i]
         self.cstats['AC']=10#+statmod(self.cstats['DEX']) #now treated as bonus to AC to allow for AC changes when dex changes
         for skill in self.allskills: self.cstats[skill[0]]=0 #store bonuses to skills granted by items etc. Zero to start.
@@ -110,9 +87,6 @@ class character():
         if 'SPELL' in self.attributes: self.spellbooklist=[spell(spelldict,self) for spelldict in self.attributes['SPELL']]
         else: self.spellbooklist=[]
         self.cstats['CAST'],self.cstats['DC'],self.cstats['SAB']=0,0,0 #even if a character doesn't have spells, they could still have equipment that buffs these values
-        for bonus in self.bonusfeatures:
-            try: self.cstats[bonus.split(':')[0]]+=int(bonus.split(':')[-1])
-            except: pass
         if 'FEATURE' in self.attributes: self.featurelist=[feature(featuredict,self) for featuredict in self.attributes['FEATURE']]
         else: self.featurelist=[]
         if 'EQUIP' in self.attributes: self.equiplist=[equipment(equipdict,self) for equipdict in self.attributes['EQUIP']]
@@ -163,11 +137,11 @@ class character():
                     bonus+=self.cstats['PRO']
                     training+='*'
                 elif 'JACK' in [feat.name[:4].upper() for feat in self.featurelist]: bonus+=self.cstats['PRO']//2
-            self.cstats[skill[0]+'bonus']=bonus #save bonus for easier lookup
-        if self.shown:
-            for ab in self.abilitylist: ab.update()
-            for equip in self.equiplist: equip.update()
-        self.gui.update()
+            self.cstats[skill[0]+'bonus']=bonus #save bonus for easier lookup            
+        if self.gui is not None: 
+            # for ab in self.abilitylist: ab.update()
+            # for equip in self.equiplist: equip.update()
+            self.gui.update()
     def rest(self,resttype):
         if resttype=='LR': resttype=['LR','SR']
         else: resttype=[resttype]
@@ -177,88 +151,6 @@ class character():
                 self.stats['TEMPHP']=0
                 self.stats['HP']=self.stats['MAXHP'] 
         self.update()
-    #     #spells
-    #     self.spelleditframe=VerticalScrolledFrame(self.roottabs)
-    #     self.spelleditframe.pack(expand=True,fill=BOTH)
-    #     self.roottabs.add(self.spelleditframe,text='Spells')
-    #     for num,key in enumerate(['Index','Display Name','Lookup Name (optional)','Level','Additional Description','Remove?']):
-    #         Label(self.spelleditframe.viewPort, text=f"{key}").grid(row=0,column=num,sticky=N+S+E+W)
-    #     self.allspelldata=[]
-    #     self.spelleditframe.viewPort.grid_columnconfigure(4, weight=1)
-    #     for num,i in enumerate(self.spellbooklist+[spell({'NAME':'','LEVEL':0,'LOOKUP':'','TEXT':'','PREP':0})]*50): 
-    #         spelldata={}
-    #         spelldata['index']=Entry(self.spelleditframe.viewPort,font=f'Times {self.fontsize}',width=5)
-    #         spelldata['index'].insert(0,str(num+1))
-    #         spelldata['index'].grid(row=num+1,column=0,sticky=N+S+E+W)
-    #         spelldata['name']=Entry(self.spelleditframe.viewPort,font=f'Times {self.fontsize}')
-    #         spelldata['name'].insert(0,i.name)
-    #         spelldata['name'].grid(row=num+1,column=1,sticky=N+S+E+W)
-    #         spelldata['lookup']=searchComboBox(self.spelleditframe.viewPort,font=f'Times {self.fontsize}')
-    #         spelldata['lookup'].index=num
-    #         spelldata['lookup'].insert(0,i.lookup)
-    #         spelldata['lookup']['values']=['']+sorted([name for name in masterspellsdict])
-    #         spelldata['lookup'].bind('<KeyRelease>',searchspells)
-    #         spelldata['lookup'].grid(row=num+1,column=2,sticky=N+S+E+W)
-    #         spelldata['level']=ttk.Combobox(self.spelleditframe.viewPort,font=f'Times {self.fontsize}',width=1)
-    #         spelldata['level'].insert(0,str(i.level))
-    #         spelldata['level']['values']=[str(i) for i in range(10)]
-    #         spelldata['level'].grid(row=num+1,column=3,sticky=N+S+E+W)
-    #         spelldata['text']=Entry(self.spelleditframe.viewPort,font=f'Times {self.fontsize}')
-    #         spelldata['text'].insert(0,i.text)
-    #         spelldata['text'].grid(row=num+1,column=4,sticky=N+S+E+W)
-    #         spelldata['delete']=IntVar()
-    #         temp=Checkbutton(self.spelleditframe.viewPort,variable=spelldata['delete'],onvalue=1,offvalue=0)
-    #         temp.grid(row=num+1,column=5,sticky=N+S+E+W)
-    #         spelldata['prep']=i.prep
-    #         self.allspelldata.append(spelldata)
-    #     setallcolor(root,self.color,self.fontcolor)
-    #     #features
-    #     self.featureeditframe=VerticalScrolledFrame(self.roottabs)
-    #     self.featureeditframe.pack(expand=True,fill=BOTH)
-    #     self.roottabs.add(self.featureeditframe,text='Features')
-    #     for num,key in enumerate(['Index','Name','Mods','Text','Remove?']):
-    #         Label(self.featureeditframe.viewPort, text=f"{key}").grid(row=0,column=num,sticky=N+S+E+W)
-    #     self.allfeaturedata=[]
-    #     # self.featureeditframe.viewPort.grid_columnconfigure(4, weight=1)
-    #     for num,i in enumerate(self.featurelist+[feature({'NAME':'','MODS':'','TEXT':''},self)]*50): 
-    #         featuredata={}
-    #         featuredata['index']=Entry(self.featureeditframe.viewPort,font=f'Times {self.fontsize}',width=5)
-    #         featuredata['index'].insert(0,str(num+1))
-    #         featuredata['index'].grid(row=num+1,column=0,sticky=N+S+E+W)
-    #         featuredata['name']=Entry(self.featureeditframe.viewPort,font=f'Times {self.fontsize}')
-    #         featuredata['name'].insert(0,i.name)
-    #         featuredata['name'].grid(row=num+1,column=1,sticky=N+S+E+W)
-    #         tempstring=''
-    #         for mod in i.mods: tempstring+=f"{mod[0]}:{mod[1]:+d},"
-    #         featuredata['mods']=Entry(self.featureeditframe.viewPort,font=f'Times {self.fontsize}')
-    #         featuredata['mods'].insert(0,tempstring[:-1])
-    #         featuredata['mods'].grid(row=num+1,column=2,sticky=N+S+E+W)
-    #         featuredata['text']=Entry(self.featureeditframe.viewPort,font=f'Times {self.fontsize}')
-    #         featuredata['text'].insert(0,i.text)
-    #         featuredata['text'].grid(row=num+1,column=3,sticky=N+S+E+W)
-    #         featuredata['delete']=IntVar()
-    #         temp=Checkbutton(self.featureeditframe.viewPort,variable=featuredata['delete'],onvalue=1,offvalue=0)
-    #         temp.grid(row=num+1,column=4,sticky=N+S+E+W)
-    #         self.allfeaturedata.append(featuredata)
-    #     setallcolor(root,self.color,self.fontcolor)
-    # def acceptedit(self):
-    #     for num,i in enumerate(self.allspelldata): 
-    #         try: self.allspelldata[num]['index']=float(self.allspelldata[num]['index'].get())
-    #         except: self.allspelldata[num]['index']=1e9
-    #     self.allspelldata=sorted(self.allspelldata,key=lambda x:x['index'])
-    #     self.spellbooklist=[spell({'NAME':data['name'].get(),'LEVEL':data['level'].get(),'LOOKUP':data['lookup'].get(),'TEXT':data['text'].get().replace('\n','\\'),'PREP':data['prep']}) for data in self.allspelldata if (data['delete'].get()!=1 and len(data['name'].get())>0)]
-    #     for num,i in enumerate(self.allfeaturedata): 
-    #         try: self.allfeaturedata[num]['index']=float(self.allfeaturedata[num]['index'].get())
-    #         except: self.allfeaturedata[num]['index']=1e9
-    #     self.allfeaturedata=sorted(self.allfeaturedata,key=lambda x:x['index'])
-    #     self.featurelist=[feature({'NAME':data['name'].get(),'MODS':data['mods'].get(),'TEXT':data['text'].get().replace('\n','\\')},self) for data in self.allfeaturedata if (data['delete'].get()!=1 and len(data['name'].get())>0)]
-    #     for item in root.winfo_children(): item.destroy()
-    #     self.show()
-    #     self.update()
-    # def canceledit(self):
-    #     for item in root.winfo_children(): item.destroy()
-    #     self.show()
-    #     self.update()
     def save(self,filepath):
         self.update()
         self.gui.setWindowTitle(filepath.split('/')[-1].split('\\')[-1])
@@ -294,7 +186,6 @@ class character():
             file.write(f"COLOR={self.color[0]},{self.color[1]},{self.color[2]}\n")
             file.write(f"FONTCOLOR={self.fontcolor[0]},{self.fontcolor[1]},{self.fontcolor[2]}\n")
             file.write(f"FONTSIZE={self.fontsize}\n")
-            for bonusfeature in self.bonusfeatures: file.write(f'{bonusfeature}\n')
             file.write('\n%%ATTRIBUTES\n')
             for ability in self.abilitylist: file.write(ability.save())
             for equip in self.equiplist: file.write(equip.save())
@@ -651,7 +542,7 @@ class MainWindow(QMainWindow):
             self.c.backpacklist[-1].show()
             self.c.update()
     def newEquip(self):
-        dialog=getEquip(self.c)
+        dialog=getEquip()
         if dialog.exec()==QDialog.Accepted:
             self.c.equiplist.append(equipment(dialog.getData(),self.c))
             self.c.equiplist[-1].show()
@@ -758,7 +649,7 @@ class getStats(QDialog):
         return
 
 class getSpell(QDialog):
-    def __init__(self):
+    def __init__(self,oldSpell=None):
         super().__init__()
         self.setWindowTitle('New Spell')
         mainLayout=QVBoxLayout()
@@ -778,6 +669,10 @@ class getSpell(QDialog):
         buttons.accepted.connect(self.verifyData)
         buttons.rejected.connect(self.reject)
         mainLayout.addWidget(buttons)
+        if oldSpell is not None:
+            self.name.setText(oldSpell.name)
+            self.lookup.setCurrentText(oldSpell.lookup)
+            self.description.setText(oldSpell.text.replace('\\','\n'))
     def verifyData(self):
         if len(self.name.text())<1: 
             QMessageBox.warning(self,'Invalid Name','No display name provided.')
@@ -787,7 +682,7 @@ class getSpell(QDialog):
         return {'NAME':self.name.text().strip(),'LEVEL':self.level.value(),'LOOKUP':self.lookup.currentText(),'TEXT':self.description.toPlainText().strip()}
 
 class getFeature(QDialog):
-    def __init__(self):
+    def __init__(self,savestring=''):
         super().__init__()
         self.setWindowTitle('New Feature')
         mainLayout=QVBoxLayout()
@@ -804,6 +699,11 @@ class getFeature(QDialog):
         buttons.accepted.connect(self.verifyData)
         buttons.rejected.connect(self.reject)
         mainLayout.addWidget(buttons)
+        if savestring!='':
+            indict={i[0]:i[1] for i in [j.strip().split('=') for j in savestring.strip().split('\n')[1:]]}
+            self.name.setText(indict['NAME'])
+            if 'MODS' in indict: self.bonuses.setText(indict['MODS'])
+            if 'TEXT' in indict: self.description.setText(indict['TEXT'].replace('\\','\n'))
     def verifyData(self):
         if len(self.name.text())<1: 
             QMessageBox.warning(self,'Invalid Name','No name provided.')
@@ -820,7 +720,7 @@ class getFeature(QDialog):
         return {'NAME':self.name.text().strip(),'MODS':self.bonuses.text().strip(),'TEXT':self.description.toPlainText().strip()}
 
 class getItem(QDialog):
-    def __init__(self):
+    def __init__(self,oldItem=None):
         super().__init__()
         self.setWindowTitle('New Item')
         mainLayout=QVBoxLayout()
@@ -837,6 +737,10 @@ class getItem(QDialog):
         buttons.accepted.connect(self.verifyData)
         buttons.rejected.connect(self.reject)
         mainLayout.addWidget(buttons)
+        if oldItem is not None:
+            self.name.setText(oldItem.name)
+            self.number.setValue(oldItem.quantity)
+            self.text.setText(oldItem.description)
     def verifyData(self):
         if len(self.name.text())<1: 
             QMessageBox.warning(self,'Invalid Name','No name provided.')
@@ -849,7 +753,7 @@ class getItem(QDialog):
         return f"{self.name.text()}:{self.number.value()}:{self.text.toPlainText().strip().replace('\n','\\')}"
 
 class getAbility(QDialog):
-    def __init__(self,c):
+    def __init__(self,c,oldAbility=None):
         super().__init__()
         self.c=c
         self.setWindowTitle('New Ability')
@@ -868,13 +772,19 @@ class getAbility(QDialog):
         formLayout.addRow('Name:',self.name)
         formLayout.addRow('Maximum Uses (optional, enter an integer or a skill/ability score name)',self.maxuse)
         formLayout.addRow('Resets on:',self.resttype)
-        formLayout.addRow('Spellslot?',self.spellslot)
+        if oldAbility is None: formLayout.addRow('Spellslot?',self.spellslot) #hide the spellslot toggle when editing to avoid GUI Character/Spells page desync
         formLayout.addRow('Description:',self.description)
         mainLayout.addLayout(formLayout)
         buttons=QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.verifyData)
         buttons.rejected.connect(self.reject)
         mainLayout.addWidget(buttons)
+        if oldAbility is not None:
+            self.name.setText(oldAbility.name)
+            self.maxuse.setText(oldAbility.maxnumraw)
+            self.resttype.setCurrentIndex(self.resttype.findData(oldAbility.resttype))
+            self.description.setText(oldAbility.description)
+            if oldAbility.spellslot: self.spellslot.setChecked(True)
     def verifyData(self):
         if len(self.name.text())<1: 
             QMessageBox.warning(self,'Invalid Name','No name provided.')
@@ -890,12 +800,11 @@ class getAbility(QDialog):
                     return 
         self.accept()
     def getData(self):
-        return {'NAME':self.name.text().strip(),'MAX':self.name.text().strip(),'REST':self.resttype.currentData(),'SPELLSLOT':'y' if self.spellslot.isChecked() else 'n','TEXT':self.description.toPlainText().strip()}
+        return {'NAME':self.name.text().strip(),'MAX':self.maxuse.text().strip(),'REST':self.resttype.currentData(),'SPELLSLOT':'y' if self.spellslot.isChecked() else 'n','TEXT':self.description.toPlainText().strip()}
 
 class getEquip(QDialog):
-    def __init__(self,c):
+    def __init__(self,oldEquip=None):
         super().__init__()
-        self.c=c
         self.setWindowTitle('New Equipment')
         mainLayout=QVBoxLayout()
         self.setLayout(mainLayout)
@@ -922,6 +831,16 @@ class getEquip(QDialog):
         buttons.accepted.connect(self.verifyData)
         buttons.rejected.connect(self.reject)
         mainLayout.addWidget(buttons)
+        if oldEquip is not None:
+            self.name.setText(oldEquip.name)
+            if len(oldEquip.mods)>0: self.bonuses.setText(', '.join([f'{i[0]}:{i[1]:+d}' for i in oldEquip.mods]))
+            if oldEquip.maxdex is not None: 
+                self.maxdexcheck.setChecked(True)
+                self.maxdex.setValue(oldEquip.maxdex)
+            if oldEquip.hitdamage!=[0,0]: self.tohit.setText(f'{oldEquip.hitdamage[0]} {oldEquip.hitdamage[1]}')
+            if oldEquip.scaling!='no': self.scaling.setCurrentText(oldEquip.scaling)
+            if oldEquip.prof: self.prof.setChecked(True)
+            self.description.setText(oldEquip.description)
     def verifyData(self):
         if len(self.name.text())<1: 
             QMessageBox.warning(self,'Invalid Name','No name provided.')
@@ -947,35 +866,58 @@ class getEquip(QDialog):
         if self.scaling.currentText()!='': outdict['SCALING']=self.scaling.currentText()
         if self.description.toPlainText().strip()!='': outdict['TEXT']=self.description.toPlainText().strip()
         return outdict
-    
+
+class contextWidget(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.showContextMenu)
+    def showContextMenu(self,pos):
+        context_menu=QMenu(self)
+        actionEdit=QAction("Edit",self)
+        actionEdit.triggered.connect(self.edit)
+        context_menu.addAction(actionEdit)
+        actionDelete=QAction("Delete",self)
+        actionDelete.triggered.connect(self.delete)
+        context_menu.addAction(actionDelete)
+        context_menu.exec(self.mapToGlobal(pos))
+    def delete(self):
+        pass
+    def edit(self):
+        pass
+
 class feature():
     def __init__(self,featdict,c):
         self.c=c
+        self.name='?'
+        self.mods=[]
+        self.description='(No Description)'
+        self.text=''
+        self.load(featdict)
+        self.enable()
+    def load(self,featdict):
         if 'NAME' in featdict: self.name=featdict['NAME']
-        else: self.name='?'
         if 'MODS' in featdict: 
-            if featdict['MODS']=='':self.mods=[]
+            if featdict['MODS']=='': pass
             else:                 
                 self.mods=featdict['MODS']
                 self.mods=[mod.strip().split(':') for mod in self.mods.split(',')]
                 for mod in self.mods: mod[1]=int(mod[1])
-        else: self.mods=[]
         if 'TEXT' in featdict: 
             self.text=featdict['TEXT'].replace('\n','\\')
             self.description=featdict['TEXT'].replace('\\','\n')
-        else: 
-            self.description='(No Description)'
-            self.text=''
-        for mod in self.mods: self.c.cstats[mod[0]]+=mod[1]
     def show(self):
         self.gui=featureWidget(self)
     def delete(self):
         self.c.featurelist.remove(self)
-        self.disable(c)
+        self.disable()
         self.c.update()
-    def disable(self,c):
-        for mod in self.mods: c.cstats[mod[0]]-=mod[1]
-        c.update()
+    def enable(self):
+        for mod in self.mods: self.c.cstats[mod[0]]+=mod[1]
+        self.c.update()
+    def disable(self):
+        for mod in self.mods: self.c.cstats[mod[0]]-=mod[1]
+        self.c.update()
     def save(self):
         tempstring=f"%FEATURE\nNAME={self.name}"
         if len(self.mods)>0: 
@@ -984,28 +926,29 @@ class feature():
             tempstring=tempstring[:-2]
         return tempstring+f'\nTEXT={self.text}\n\n'
 
-class featureWidget(QWidget):
+class featureWidget(contextWidget):
     def __init__(self,feat):
         super().__init__()
         self.feat=feat
         self.layout=QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layout)
-        self.layout.addWidget(QPushButton(text=self.feat.name,clicked=self.showinfo))
+        self.button=QPushButton(text=self.feat.name,clicked=self.showinfo)
+        self.layout.addWidget(self.button)
         self.feat.c.gui.featureLayout.insertWidget(self.feat.c.gui.featureLayout.count(),self)
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self.showContextMenu)
-    def showContextMenu(self,pos):
-        context_menu=QMenu(self)
-        actionDelete=QAction("Delete",self)
-        actionDelete.triggered.connect(self.delete)
-        context_menu.addAction(actionDelete)
-        context_menu.exec(self.mapToGlobal(pos))
     def delete(self):
         self.feat.c.gui.featureLayout.removeWidget(self)
         self.setParent(None)
         self.deleteLater()
         self.feat.delete()
+    def edit(self):
+        dialog=getFeature(self.feat.save())
+        if dialog.exec()==QDialog.Accepted:
+            self.feat.disable()
+            newdict=dialog.getData()
+            self.feat.load(newdict)
+            self.button.setText(self.feat.name)
+            self.feat.enable()
     def showinfo(self):
         self.dialog=PopupDialog(self.feat.name,self.feat.description.replace('\\','\n'))
         self.dialog.show()
@@ -1022,29 +965,30 @@ class PopupDialog(QDialog):
 class ability():
     def __init__(self,abilitydict,c):
         self.c=c
+        self.name='(N/A)'
+        self.maxnum=0
+        self.maxnumraw=0
+        self.numleft=0
+        self.resttype=''
+        self.spellslot=False
+        self.description='(No Description)'
+        self.text=''
+        self.load(abilitydict)
+    def load(self,abilitydict):
         if 'NAME' in abilitydict: self.name=abilitydict['NAME']
-        else: self.name='(N/A)'
         if 'MAX' in abilitydict:
             self.maxnumraw=abilitydict['MAX']
             try: self.maxnum=int(abilitydict['MAX'])
             except ValueError: self.maxnum=max(1,self.c.cstats[abilitydict['MAX']+'bonus']) if abilitydict['MAX'] in [i[0] for i in self.c.allskills] else (max(1,statmod(self.c.cstats[abilitydict['MAX']])) if abilitydict['MAX'] in ['STR','DEX','CON','INT','WIS','CHA'] else (self.c.cstats[abilitydict['MAX']] if abilitydict['MAX']=='PRO' else 0))
-        else: 
-            self.maxnum=0
-            self.maxnumraw=0
         if 'REMAINING' in abilitydict: self.numleft=int(abilitydict['REMAINING'])
-        else: self.numleft=0
-        if 'REST' in abilitydict: self.resttype=abilitydict['REST']
-        else: self.resttype='none'
+        if 'REST' in abilitydict: 
+            self.resttype=abilitydict['REST']
+            if self.resttype.lower()=='none': self.resttype='' #remove legacy 'none' value
         if 'SPELLSLOT' in abilitydict: 
             if 'y' in abilitydict['SPELLSLOT'].lower(): self.spellslot=True
-            else: self.spellslot=False
-        else: self.spellslot=False
         if 'TEXT' in abilitydict: 
             self.text=abilitydict['TEXT'].replace('\n','\\')
             self.description=abilitydict['TEXT'].replace('\\','\n')
-        else: 
-            self.description='(No Description)'
-            self.text=''
     def update(self):
         try: self.maxnum=int(self.maxnumraw)
         except ValueError: self.maxnum=max(1,self.c.cstats[self.maxnumraw+'bonus']) if self.maxnumraw in [i[0] for i in self.c.allskills] else (max(1,statmod(self.c.cstats[self.maxnumraw])) if self.maxnumraw in ['STR','DEX','CON','INT','WIS','CHA'] else (self.c.cstats[self.maxnumraw] if self.maxnumraw=='PRO' else 0))
@@ -1075,56 +1019,49 @@ class ability():
         if self.spellslot: self.spellgui=abilityWidget(self,spellslot=True)
         self.update()
     def delete(self):
-        if self.spellslot: self.spellgui.delete()
-        self.gui.delete()
+        if self.spellslot: self.spellgui.selfdelete()
+        self.gui.selfdelete()
         self.c.abilitylist.remove(self)
     def save(self):
-        if self.spellslot: return f"%ABILITY\nNAME={self.name}\nMAX={self.maxnum}\nREMAINING={self.numleft}\nREST={self.resttype}\nSPELLSLOT=YES\nTEXT={self.text}\n\n"
-        else: return f"%ABILITY\nNAME={self.name}\nMAX={self.maxnumraw}\nREMAINING={self.numleft}\nREST={self.resttype}\nSPELLSLOT=NO\nTEXT={self.text}\n\n"
+        return f"%ABILITY\nNAME={self.name}\nMAX={self.maxnum}\nREMAINING={self.numleft}\nREST={self.resttype}\nSPELLSLOT={'YES' if self.spellslot else 'NO'}\nTEXT={self.text}\n\n"
 
-class abilityWidget(QWidget):
+class abilityWidget(contextWidget):
     def __init__(self,ability,spellslot=False):
         super().__init__()
         self.ability=ability
         self.layout=QHBoxLayout()
         self.layout.setContentsMargins(0,0,0,0)
         self.setLayout(self.layout)
-        self.unuseButton=QPushButton(text='+',clicked=self.unuse)
+        self.unuseButton=QPushButton(text='+',clicked=self.ability.unuse)
         self.unuseButton.setFixedWidth(self.unuseButton.sizeHint().height())
         self.layout.addWidget(self.unuseButton)
         if spellslot: 
             # self.useButton.setFlat(True)
             # self.uesButton.setStyleSheet("border: none;")# background: none;")
-            self.useButton=QPushButton(text='?',clicked=self.use)
+            self.useButton=QPushButton(text='?',clicked=self.ability.use)
             self.layout.addWidget(self.useButton)
             self.guiLocation=self.ability.c.gui.spellLVLLayouts[ability.name[0]]
             self.guiLocation.insertWidget(0,self)
         else: 
-            self.useButton=QPushButton(text='-',clicked=self.use)
+            self.useButton=QPushButton(text='-',clicked=self.ability.use)
             self.useButton.setFixedWidth(self.unuseButton.sizeHint().height())
             self.infoButton=QPushButton(text='?',clicked=self.showinfo)
             self.layout.addWidget(self.useButton)
             self.layout.addWidget(self.infoButton)
             self.guiLocation=self.ability.c.gui.cAbilityLayout
             self.guiLocation.insertWidget(self.guiLocation.count()-1,self)
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self.showContextMenu)
-    def showContextMenu(self,pos):
-        context_menu=QMenu(self)
-        actionDelete=QAction("Delete",self)
-        actionDelete.triggered.connect(self.senddelete)
-        context_menu.addAction(actionDelete)
-        context_menu.exec(self.mapToGlobal(pos))
-    def use(self):
-        self.ability.use()
-    def unuse(self):
-        self.ability.unuse()
-    def senddelete(self):
+    def delete(self): #necessary to override  contextWidget
         self.ability.delete()
+    def edit(self):
+        dialog=getAbility(self.ability.c,self.ability)
+        if dialog.exec()==QDialog.Accepted:
+            newDict=dialog.getData()
+            self.ability.load(newDict)
+            self.ability.update()
     def showinfo(self):
         self.dialog=PopupDialog(self.ability.name,self.ability.description.replace('\\','\n'))
         self.dialog.show()
-    def delete(self):
+    def selfdelete(self):
         self.guiLocation.removeWidget(self)
         self.setParent(None)
         self.deleteLater()
@@ -1132,42 +1069,36 @@ class abilityWidget(QWidget):
 class equipment():
     def __init__(self,equipdict,c):
         self.c=c
+        self.mods=[]
+        self.hitdamage=[0,0]
+        self.scaling='no' 
+        self.equipped=False
+        self.prof=False
+        self.maxdex=None
+        self.description='(No Description)'
+        self.text=''
+        self.gui=None
+        self.load(equipdict)
+        self.update()
+    def load(self,equipdict):
         if 'NAME' in equipdict: self.name=equipdict['NAME']
         else: self.name='?'
         if 'MODS' in equipdict: 
             self.mods=equipdict['MODS']
             self.mods=[mod.strip().split(':') for mod in self.mods.split(',')]
             for mod in self.mods: mod[1]=int(mod[1])
-        else: self.mods=[]
         if 'HITDAMAGE' in equipdict: self.hitdamage=[int(equipdict['HITDAMAGE'].split()[0]),equipdict['HITDAMAGE'].split()[1]]
-        else: self.hitdamage=[0,0]  
         if 'SCALING' in equipdict: self.scaling=equipdict['SCALING']
-        else: self.scaling='no'   
         if 'EQUIPPED' in equipdict: 
             if equipdict['EQUIPPED'].strip().lower() in 'yes': self.equipped=True
             elif equipdict['EQUIPPED'].strip().lower() in 'no': self.equipped=False
-        else: self.equipped=False   
         if 'PROF' in equipdict: 
             if equipdict['PROF'].strip().lower() in 'yes': self.prof=True
-            elif equipdict['PROF'].strip().lower() in 'no': self.prof=False
-        else: self.prof=False  
         if 'MAXDEX' in equipdict: self.maxdex=int(equipdict['MAXDEX'])
-        else: self.maxdex=False
         if 'TEXT' in equipdict: 
             self.text=equipdict['TEXT'].replace('\n','\\')
             self.description=equipdict['TEXT'].replace('\\','\n')
-        else: 
-            self.description='(No Description)'
-            self.text=''
-        if self.equipped: 
-            for mod in self.mods:
-                if mod[0]=='AC' and type(self.maxdex)==int and (self.maxdex<statmod(self.c.cstats['DEX']) or self.maxdex==0): #heavy armor, maxdex==0 and negative dex mod is not counted
-                    self.ACadded=mod[1]+self.maxdex-statmod(self.c.cstats['DEX']) #fix infinite AC exploit
-                    c.cstats[mod[0]]+=self.ACadded
-                elif mod[0]=='AC' and type(self.maxdex)==int:
-                    self.ACadded=mod[1]
-                    self.c.cstats[mod[0]]+=self.ACadded
-                else: self.c.cstats[mod[0]]+=mod[1]
+        if self.equipped: self.enable()
     def update(self,upc=False,upe=False): #need to update again after character update if ability scores change for calculating to hit and damage, prevent infinite recursion with upc and upe
         tempstring=f"{self.name}"
         for mod in self.mods:
@@ -1179,33 +1110,37 @@ class equipment():
             else: 
                 if self.scaling.lower() not in 'no': tempstring+=f", To Hit:{self.hitdamage[0]+statmod(self.c.cstats[self.scaling]):+d}, {self.hitdamage[1]}{statmod(self.c.cstats[self.scaling]):+d}"
                 else: tempstring+=f", To Hit:{self.hitdamage[0]:+d}, {self.hitdamage[1]}"
-        if self.equipped: self.gui.togglebutton.setText('\u2611')
-        else: self.gui.togglebutton.setText('\u2610')
-        self.gui.infobutton.setText(tempstring)
+        if self.gui is not None:
+            if self.equipped: self.gui.toggleButton.setText('\u2611')
+            else: self.gui.toggleButton.setText('\u2610')
+            self.gui.infoButton.setText(tempstring)
         if upc: 
             self.c.update()
             self.update()
         if upe:
             for i in self.c.equiplist: i.update()
-    def toggle(self):
-        if self.equipped: 
-            self.equipped=False
-            for mod in self.mods:
-                if mod[0]=='AC' and type(self.maxdex)==int and (self.maxdex<statmod(self.c.cstats['DEX']) or self.maxdex==0): #heavy armor, maxdex==0 and negative dex mod is not counted
-                    self.c.cstats[mod[0]]-=self.ACadded #fix infinite AC exploit
-                elif mod[0]=='AC' and type(self.maxdex)==int: self.c.cstats[mod[0]]-=self.ACadded
-                else: self.c.cstats[mod[0]]-=mod[1]
-        else: 
-            self.equipped=True
-            for mod in self.mods:
-                if mod[0]=='AC' and type(self.maxdex)==int and (self.maxdex<statmod(self.c.cstats['DEX']) or self.maxdex==0): #heavy armor, maxdex==0 and negative dex mod is not counted
-                    self.ACadded=mod[1]+self.maxdex-statmod(self.c.cstats['DEX']) #fix infinite AC exploit
-                    self.c.cstats[mod[0]]+=self.ACadded
-                elif mod[0]=='AC' and type(self.maxdex)==int:
-                    self.ACadded=mod[1]
-                    self.c.cstats[mod[0]]+=self.ACadded
-                else: self.c.cstats[mod[0]]+=mod[1]
+    def enable(self):
+        self.equipped=True
+        for mod in self.mods:
+            if mod[0]=='AC' and type(self.maxdex)==int and (self.maxdex<statmod(self.c.cstats['DEX']) or self.maxdex==0): #heavy armor, maxdex==0 and negative dex mod is not counted
+                self.ACadded=mod[1]+self.maxdex-statmod(self.c.cstats['DEX']) #fix infinite AC exploit
+                self.c.cstats[mod[0]]+=self.ACadded
+            elif mod[0]=='AC' and type(self.maxdex)==int:
+                self.ACadded=mod[1]
+                self.c.cstats[mod[0]]+=self.ACadded
+            else: self.c.cstats[mod[0]]+=mod[1]
         self.update(upc=True,upe=True)
+    def disable(self):
+        self.equipped=False
+        for mod in self.mods:
+            if mod[0]=='AC' and type(self.maxdex)==int and (self.maxdex<statmod(self.c.cstats['DEX']) or self.maxdex==0): #heavy armor, maxdex==0 and negative dex mod is not counted
+                self.c.cstats[mod[0]]-=self.ACadded #fix infinite AC exploit
+            elif mod[0]=='AC' and type(self.maxdex)==int: self.c.cstats[mod[0]]-=self.ACadded
+            else: self.c.cstats[mod[0]]-=mod[1]
+        self.update(upc=True,upe=True)
+    def toggle(self):
+        if self.equipped: self.disable()            
+        else: self.enable()
     def show(self):
         self.gui=equipWidget(self)
         self.update()
@@ -1225,50 +1160,55 @@ class equipment():
         if self.equipped: tempstring+='\nEQUIPPED=YES'
         return tempstring+f'\nTEXT={self.text}\n\n'
 
-class equipWidget(QWidget):
+class equipWidget(contextWidget):
     def __init__(self,equip):
         super().__init__()
         self.equip=equip
         self.layout=QHBoxLayout()
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setContentsMargins(0,0,0,0)
         self.setLayout(self.layout)
-        self.togglebutton=QPushButton(text='[?]',clicked=self.toggle)
-        self.togglebutton.setFixedWidth(self.togglebutton.sizeHint().height())
-        self.layout.addWidget(self.togglebutton)
-        self.infobutton=QPushButton(text=self.equip.name,clicked=self.showinfo)
-        self.layout.addWidget(self.infobutton)
+        self.toggleButton=QPushButton(text='[?]',clicked=self.equip.toggle)
+        self.toggleButton.setFixedWidth(self.toggleButton.sizeHint().height())
+        self.layout.addWidget(self.toggleButton)
+        self.infoButton=QPushButton(text=self.equip.name,clicked=self.showinfo)
+        self.layout.addWidget(self.infoButton)
         self.equip.c.gui.cEquipLayout.insertWidget(self.equip.c.gui.cEquipLayout.count(),self)
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self.showContextMenu)
-    def showContextMenu(self,pos):
-        context_menu=QMenu(self)
-        actionDelete=QAction("Delete",self)
-        actionDelete.triggered.connect(self.delete)
-        context_menu.addAction(actionDelete)
-        context_menu.exec(self.mapToGlobal(pos))
+    def showinfo(self):
+        self.dialog=PopupDialog(self.equip.name,self.equip.description.replace('\\','\n'))
+        self.dialog.show()
+    def edit(self):
+        if self.equip.equipped: 
+            self.equip.disable()
+            reEnable=True
+        else: reEnable=False
+        dialog=getEquip(self.equip)
+        if dialog.exec()==QDialog.Accepted:
+            newDict=dialog.getData()
+            self.equip.load(newDict)
+            if reEnable: self.equip.enable()
+            self.equip.update(upc=True,upe=True)
     def delete(self):
         self.equip.c.gui.cEquipLayout.removeWidget(self)
         self.setParent(None)
         self.deleteLater()
         self.equip.delete()
-    def toggle(self):
-        self.equip.toggle()
-    def showinfo(self):
-        self.dialog=PopupDialog(self.equip.name,self.equip.description.replace('\\','\n'))
-        self.dialog.show()
-
+    
 class item():
     def __init__(self,bpline,c):
         self.c=c
+        self.quantity=0
+        self.name=''
+        self.text=''
+        self.description=''
+        self.load(bpline)
+    def load(self,bpline):
         self.quantity=int(bpline.split(':')[1])
         self.name=bpline.split(':')[0].strip()
         if len(bpline.split(':'))>2: 
             self.text=':'.join(bpline.split(':')[2:]).strip().replace('\n','\\')
-            self.description=self.text.replace('\n','\\').strip()
+            self.description=self.text.replace('\\','\n').strip()
             if len(self.description)==0: self.description='(No Description)'
-        else: 
-            self.text=''
-            self.description='(No Description)'
+        else: self.description='(No Description)'
     def show(self):
         self.gui=itemWidget(self)
     def delete(self):
@@ -1276,7 +1216,7 @@ class item():
     def save(self):
         return f"{self.name}:{self.quantity}:{self.text}\n"
     
-class itemWidget(QWidget):
+class itemWidget(contextWidget):
     def __init__(self,item):
         super().__init__()
         self.item=item
@@ -1287,21 +1227,21 @@ class itemWidget(QWidget):
         self.quantity.valueChanged.connect(self.changeValue)
         self.quantity.setFixedWidth(self.quantity.sizeHint().height()*5)
         self.layout.addWidget(self.quantity)
-        self.layout.addWidget(QPushButton(self.item.name,clicked=self.showinfo))
+        self.button=QPushButton(self.item.name,clicked=self.showinfo)
+        self.layout.addWidget(self.button)
         self.item.c.gui.itemLayout.insertWidget(self.item.c.gui.itemLayout.count()-1,self)
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self.showContextMenu)
-    def showContextMenu(self,pos):
-        context_menu=QMenu(self)
-        actionDelete=QAction("Delete",self)
-        actionDelete.triggered.connect(self.delete)
-        context_menu.addAction(actionDelete)
-        context_menu.exec(self.mapToGlobal(pos))
     def changeValue(self,value):
         self.item.quantity=value
     def showinfo(self):
         self.dialog=PopupDialog(self.item.name,self.item.description.replace('\\','\n'))
         self.dialog.show()
+    def edit(self):
+        dialog=getItem(self.item)
+        if dialog.exec()==QDialog.Accepted:
+            newstring=dialog.getData()
+            self.item.load(newstring)
+            self.quantity.setValue(self.item.quantity)
+            self.button.setText(self.item.name)
     def delete(self):
         self.item.c.gui.itemLayout.removeWidget(self)
         self.setParent(None)
@@ -1311,8 +1251,15 @@ class itemWidget(QWidget):
 class spell():
     def __init__(self,spelldict,c):
         self.c=c
+        self.name='?'
+        self.lookup=''
+        self.description=''
+        self.text=''
+        self.level=0
+        self.prep=False
+        self.load(spelldict)
+    def load(self,spelldict):
         if 'NAME' in spelldict: self.name=spelldict['NAME']
-        else: self.name='?'
         if 'LOOKUP' in spelldict: 
             if spelldict['LOOKUP']=='1': self.lookup=spelldict['NAME'] #needed for the transtion to new code.
             elif spelldict['LOOKUP']==0: self.lookup=''
@@ -1336,16 +1283,13 @@ class spell():
             if 'LEVEL' in spelldict: 
                 try: self.level=int(spelldict['LEVEL'])
                 except ValueError: self.level=0
-            else: self.level=0
         if 'PREP' in spelldict: self.prep=bool(int(spelldict['PREP']))
-        else: self.prep=False
         if 'TEXT' in spelldict: 
             self.text=spelldict['TEXT'].replace('\n','\\')
             self.description+=spelldict['TEXT'].replace('\\','\n') 
-        else: self.text=''
     def update(self):
-        if not self.prep: self.gui.togglebutton.setText('\u2610')
-        else: self.gui.togglebutton.setText('\u2611')
+        if not self.prep: self.gui.toggleButton.setText('\u2610')
+        else: self.gui.toggleButton.setText('\u2611')
     def toggle(self):
         if self.prep: self.prep=False
         else: self.prep=True
@@ -1358,36 +1302,36 @@ class spell():
     def save(self):
         return f"%SPELL\nNAME={self.name}\nLOOKUP={self.lookup}\nLEVEL={self.level}\nPREP={int(self.prep)}\nTEXT={self.text}\n\n"
 
-class spellWidget(QWidget):
+class spellWidget(contextWidget):
     def __init__(self,spell):
         super().__init__()
         self.spell=spell
         self.layout=QHBoxLayout()
         self.layout.setContentsMargins(0,0,0,0)
         self.setLayout(self.layout)
-        self.togglebutton=QPushButton(text='[?]',clicked=self.toggle)
-        self.togglebutton.setFixedWidth(self.togglebutton.sizeHint().height())
-        self.layout.addWidget(self.togglebutton)
-        self.layout.addWidget(QPushButton(text=self.spell.name,clicked=self.showinfo))
+        self.toggleButton=QPushButton(text='[?]',clicked=self.toggle)
+        self.toggleButton.setFixedWidth(self.toggleButton.sizeHint().height())
+        self.layout.addWidget(self.toggleButton)
+        self.infoButton=QPushButton(text=self.spell.name,clicked=self.showinfo)
+        self.layout.addWidget(self.infoButton)
         self.spell.c.gui.spellLVLLayouts[(str(self.spell.level))].insertWidget(self.spell.c.gui.spellLVLLayouts[(str(self.spell.level))].count(),self)
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self.showContextMenu)
-    def showContextMenu(self,pos):
-        context_menu=QMenu(self)
-        actionDelete=QAction("Delete",self)
-        actionDelete.triggered.connect(self.delete)
-        context_menu.addAction(actionDelete)
-        context_menu.exec(self.mapToGlobal(pos))
-    def delete(self):
-        self.spell.c.gui.spellsCLayout.removeWidget(self)
-        self.setParent(None)
-        self.deleteLater()
-        self.spell.delete()
     def toggle(self):
         self.spell.toggle()
     def showinfo(self):
         self.dialog=PopupDialog(self.spell.name,self.spell.description.replace('\\','\n'))
         self.dialog.show()
+    def edit(self):
+        dialog=getSpell(self.spell)
+        if dialog.exec()==QDialog.Accepted:
+            newDict=dialog.getData()
+            self.spell.load(newDict)
+            self.infoButton.setText(self.spell.name)
+    def delete(self):
+        self.spell.c.gui.spellsCLayout.removeWidget(self)
+        self.setParent(None)
+        self.deleteLater()
+        self.spell.delete()
+    
 
 def numsuffix(num):
     if int(num)==1: return f'{num}st'

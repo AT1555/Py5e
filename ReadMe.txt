@@ -1,6 +1,6 @@
 Py5e - An Interactive Character Sheet for D&D 5th Edition
 Developed by Anthony Taylor
-Version: 2026_03_10
+Version: 2026_03_15
 
 (Due to a recent overhaul and port from Tkinter to PySide6, this document is a bit out of date).
 
@@ -97,4 +97,5 @@ CHANGELOG
 (2026/03/01): Completely ported to Qt (PySide6) GUI. With this major change, bugs are expected and some previous features have been temporarily removed. Temporarily removed features include: deletion of Spells, Spell and Feature editing GUI, color customization, and fontsize customization. These will likely return in the future. Other changes: GOLD is no longer a character stat, and is instead a backpack item. Adding new items and equipment, Resting, Saving, and Editing characters is now performed using the drop down menus on the menu bar. 
 (2026/03/08): Bug Fixes: Languages title restored. Features added: Ctrl+S now saves the open sheet. The current open file is now displayed in the title bar, and is marked by an "*" when there are unsaved changes. Spellslot abilities now appear as buttons (stylistic update). The scroll wheel is disabled in QSpinBoxes to avoid accidentally changing values. Abilities, Equipment, and Items may now have embedded text descriptions. The character sheet now logs the last version of Py5e used for saving (this will help with backwards compatibility). Spells, Features, Equipment, Items, and Abilities now support native multiline input when added. Fontsize can now be changed from the Edit menu and is saved on a per-sheet basis. The fontsize of the character select screen has been increased from 9pt to 10pt.
 (2026/03/10): New Features: Any Ability, Equipment, Feature, Item, or Spell can now be right-clicked to show a delete option. All delete buttons in the GUI have been removed. Spells can now be deleted. An entry under the Edit Menu ("Remove...") explains this via a popup. 
-(2026/03/11): Bug Fixes: The marking of the sheet title with an "*" caused a bug that prevented a new character sheet from ever showing updated data. This is now fixed. New Features: Opening a New Character now automatically lauches the Character editor when selected. 
+(2026/03/11): Bug Fixes: The marking of the sheet title with an "*" caused a bug that prevented a new character sheet from ever showing updated data. This is now fixed. New Features: Opening a New Character now automatically launches the Character editor when selected. 
+(2026/03/15): New Features: Any Ability, Equipment, Feature, Item, or Spell can now be right-clicked to show an Edit option that calls a popup to edit that object. Bug Fixes: Max Uses when creating a new ability now function as expected.
