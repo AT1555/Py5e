@@ -1,4 +1,4 @@
-from PySide6.QtGui import QAction, QKeySequence, QShortcut
+from PySide6.QtGui import QAction, QKeySequence, QShortcut, QIcon
 from PySide6.QtWidgets import QMainWindow, QApplication, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QWidget, QTabWidget, QInputDialog, QScrollArea, QFrame, QFileDialog, QMessageBox, QDialog, QSpinBox, QTextEdit, QFormLayout, QLineEdit, QDialogButtonBox, QCheckBox, QComboBox, QMenu
 from PySide6.QtCore import Qt
 import sys
@@ -7,8 +7,10 @@ from bs4 import BeautifulSoup
 import requests
 import json
 from os import getcwd
+import sys
+from pathlib import Path
 
-version='2026_03_15'
+version='2026_07_12'
 
 class character():
     def __init__(self): #initalize blank character
@@ -57,7 +59,7 @@ class character():
             line=line.split('=')
             if line[0]=='NAME': self.name=line[1].strip()
             elif line[0]=='CLASS': self.classes=line[1].strip()
-            elif line[0] in ['HP','MAXHP','TEMPHP','STE','DEX','CON','INT','WIS','CHA','PRO']: self.stats[line[0]]=int(line[1])
+            elif line[0] in ['HP','MAXHP','TEMPHP','STR','DEX','CON','INT','WIS','CHA','PRO']: self.stats[line[0]]=int(line[1])
             elif line[0]=='SPEED': self.stats['SPEED']=int(float(line[1]))
             elif line[0]=='GOLD': self.stats['GOLD']=float(line[1]) #to be removed in future versions as character.stats['GOLD'] will be removed
             elif line[0]=='LANGUAGES': self.langs=[i.strip() for i in line[1].split(',')]
@@ -207,7 +209,8 @@ class MainWindow(QMainWindow):
         self.resize(int(700*(c.fontsize/9)),int(800*(c.fontsize/9))) #700 is a guess for width, 800 perfectly fits all skills
         # self.resize(700,800)
         self.setWindowTitle('Py5e')
-
+        icon=QIcon(logo)
+        self.setWindowIcon(icon)
         self.quitAllowed=False
 
         saveShortcut=QShortcut(QKeySequence("Ctrl+S"), self)
@@ -578,6 +581,8 @@ class getStats(QDialog):
         super().__init__()
         self.c=c
         self.setWindowTitle('Edit Character')
+        icon=QIcon(logo)
+        self.setWindowIcon(icon)
         mainLayout=QVBoxLayout()
         self.setLayout(mainLayout)
         LRLayout=QHBoxLayout()
@@ -652,6 +657,8 @@ class getSpell(QDialog):
     def __init__(self,oldSpell=None):
         super().__init__()
         self.setWindowTitle('New Spell')
+        icon=QIcon(logo)
+        self.setWindowIcon(icon)
         mainLayout=QVBoxLayout()
         self.setLayout(mainLayout)
         formLayout=QFormLayout()
@@ -685,6 +692,8 @@ class getFeature(QDialog):
     def __init__(self,savestring=''):
         super().__init__()
         self.setWindowTitle('New Feature')
+        icon=QIcon(logo)
+        self.setWindowIcon(icon)
         mainLayout=QVBoxLayout()
         self.setLayout(mainLayout)
         formLayout=QFormLayout()
@@ -723,6 +732,8 @@ class getItem(QDialog):
     def __init__(self,oldItem=None):
         super().__init__()
         self.setWindowTitle('New Item')
+        icon=QIcon(logo)
+        self.setWindowIcon(icon)
         mainLayout=QVBoxLayout()
         self.setLayout(mainLayout)
         formLayout=QFormLayout()
@@ -757,6 +768,8 @@ class getAbility(QDialog):
         super().__init__()
         self.c=c
         self.setWindowTitle('New Ability')
+        icon=QIcon(logo)
+        self.setWindowIcon(icon)
         mainLayout=QVBoxLayout()
         self.setLayout(mainLayout)
         formLayout=QFormLayout()
@@ -806,6 +819,8 @@ class getEquip(QDialog):
     def __init__(self,oldEquip=None):
         super().__init__()
         self.setWindowTitle('New Equipment')
+        icon=QIcon(logo)
+        self.setWindowIcon(icon)
         mainLayout=QVBoxLayout()
         self.setLayout(mainLayout)
         formLayout=QFormLayout()
@@ -957,6 +972,8 @@ class PopupDialog(QDialog):
     def __init__(self,title,text):
         super().__init__()
         self.setWindowTitle(title)
+        icon=QIcon(logo)
+        self.setWindowIcon(icon)
         layout=QVBoxLayout(self)
         label=QLabel(text,alignment=Qt.AlignmentFlag.AlignCenter)
         label.setWordWrap(True)
@@ -1248,6 +1265,53 @@ class itemWidget(contextWidget):
         self.deleteLater()
         self.item.delete()
 
+def process_spell_description(entries):
+    description=''
+    for entry in entries:
+        if isinstance(entry,str): description+='\n\n'+entry
+        elif entry['type']=='list': 
+            for item in entry['items']: #inconsistent use of entires vs list in 5e.tools necesitates this section
+                if isinstance(item,str): description+='\n'+item
+                elif isinstance(item,dict) and 'entries' in item: description+='\n-'+f"{item['name']+': ' if 'name' in item else ''}{process_spell_description(item['entries'])}"
+        elif entry['type']=='entries': description+='\n-'+f"{entry['name']+': ' if 'name' in entry else ''}{process_spell_description(entry['entries'])}"
+        elif entry['type']=='table': 
+            if 'caption' in entry: description+='\n\n'+entry['caption']
+            else: description+='\n\n'
+            for rowidx in range(len(entry['rows'])): #clean up rows in case of subdictionaries
+                for rowidxidx in range(len(entry['rows'][rowidx])):
+                    if isinstance(entry['rows'][rowidx][rowidxidx],dict) and 'roll' in entry['rows'][rowidx][rowidxidx]:
+                        if 'exact' in entry['rows'][rowidx][rowidxidx]['roll']: entry['rows'][rowidx][rowidxidx]=entry['rows'][rowidx][rowidxidx]['roll']['exact']
+                        elif 'min' in entry['rows'][rowidx][rowidxidx]['roll'] and 'max' in entry['rows'][rowidx][rowidxidx]['roll']: entry['rows'][rowidx][rowidxidx]=str(entry['rows'][rowidx][rowidxidx]['roll']['min'])+'-'+str(entry['rows'][rowidx][rowidxidx]['roll']['max'])
+            for row in entry['rows']: description+='\n'+', '.join([f"{entry['colLabels'][num]}: {row[num]}" for num in range(len(row))])
+        else: pass
+    while '{' in description: #clean up bracketed text
+        start=0
+        end=0
+        idx=0
+        while start==0 or end==0:
+            if description[idx]=='{': start=idx
+            if description[idx]=='}': end=idx
+            idx+=1
+        brackets=description[start:end+1]
+        if '@' in brackets: 
+            if '@chance' in brackets: description=description.replace(brackets,brackets.split(' ')[1].split('|')[0]+'%')
+            elif '@filter' in brackets  in brackets or '@quickref' in brackets or '@item' in brackets or '@book' in brackets: #grab preceeding phrase
+                temp=brackets.split('|')[0].replace('}','').replace('{','').strip()
+                temp=' '.join([i for i in temp.split(' ') if '@' not in i])
+                description=description.replace(brackets,temp)
+            elif '@scaledice' in brackets or '@scaledamage' in brackets or '@creature' in brackets or '@status' in brackets or '@condition' or '@dice' in brackets: #grab last phrase
+                temp=brackets.split('|')[-1].replace('}','').replace('{','').strip()
+                temp=' '.join([i for i in temp.split(' ') if '@' not in i])
+                description=description.replace(brackets,temp)
+            elif '@adventure' in brackets:
+                temp=brackets.replace('|',', ').replace('}','').replace('{','').strip()
+                temp=' '.join([i for i in temp.split(' ') if '@' not in i])
+                description=description.replace(brackets,temp)
+            else: description=description.replace(brackets,' '.join([i for i in brackets.split(' ') if '@' not in i]).replace('}','').replace('{','').strip())
+        elif '|' in brackets: description=description.replace(brackets,brackets.split('|')[-1].replace('}','').replace('{','').strip())
+        else: description=description.replace(brackets,brackets.replace('}','').replace('{','').strip())
+    return description.strip()
+
 class spell():
     def __init__(self,spelldict,c):
         self.c=c
@@ -1269,16 +1333,12 @@ class spell():
         if self.lookup in masterspellsdict:
             match=masterspellsdict[self.lookup]
             self.level=match['level']
-            self.description+=f"{numsuffix(match['level'])}-level {schools[match['school']]}\n\nCasting Time: {match['time'][0]['number']} {match['time'][0]['unit']}\n\n"
-            if match['range']['type']!='special': self.description+=f"Range: {match['range']['distance']['amount'] if match['range']['distance']['type']=='feet' else ''} {match['range']['distance']['type']}\n\n"
-            self.description+=f"Components: {'V ' if 'v' in match['components'] else ''}{'S ' if 's' in match['components'] else ''}{'M: '+match['components']['m']['text'] if 'm' in match['components'] and 'text' in match['components']['m'] and isinstance(match['components']['m'],dict) else 'M: '+match['components']['m'] if 'm' in match['components'] else ''}\n\n"
-            self.description+=f"Duration: {match['duration'][0]['type'] if match['duration'][0]['type']!='timed' else str(match['duration'][0]['duration']['amount'])+' '+match['duration'][0]['duration']['type']+(', Concentration' if 'concentration' in match['duration'][0] else '')}\n\n"
-            self.description+='\n\n'.join([i for i in [entry if isinstance(entry,str) else '\n'.join(entry['items']) if (isinstance(entry,dict) and 'items' in entry) else '' for entry in match['entries']] if len(i)>0])+'\n\n'
-            #self.description+='\n\n'.join([entry for entry in match['entries'] if isinstance(entry,str)  else '\n'.join(entry['items']) if (isinstance(entry,dict) and 'items' in entry)])+'\n\n'
-            if 'entriesHigherLevel' in match: self.description+=match['entriesHigherLevel'][0]['name']+': '+match['entriesHigherLevel'][0]['entries'][0]+'\n\n'
-            for badchar in ['}','{','(',')']: self.description=self.description.replace(badchar,'')
-            self.description=" ".join([word for word in self.description.split(' ') if '@' not in word])
-            self.description=" ".join([word.split('|')[-1] for word in self.description.split(' ')])
+            self.description+=f"{numsuffix(match['level'])}-level {schools[match['school']]}\nCasting Time: {match['time'][0]['number']} {match['time'][0]['unit']}"
+            if match['range']['type']!='special': self.description+=f"\nRange: {match['range']['distance']['amount'] if match['range']['distance']['type']=='feet' else ''} {match['range']['distance']['type']}"
+            self.description+=f"\nComponents: {'V ' if 'v' in match['components'] else ''}{'S ' if 's' in match['components'] else ''}{'M: '+match['components']['m']['text'] if 'm' in match['components'] and 'text' in match['components']['m'] and isinstance(match['components']['m'],dict) else 'M: '+match['components']['m'] if 'm' in match['components'] else ''}"
+            self.description+=f"\nDuration: {match['duration'][0]['type'] if match['duration'][0]['type']!='timed' else str(match['duration'][0]['duration']['amount'])+' '+match['duration'][0]['duration']['type']+(', Concentration' if 'concentration' in match['duration'][0] else '')}"
+            self.description+='\n\n'+process_spell_description(match['entries'])
+            if 'entriesHigherLevel' in match: self.description+='\n\n'+process_spell_description(match['entriesHigherLevel'])
         else:
             if 'LEVEL' in spelldict: 
                 try: self.level=int(spelldict['LEVEL'])
@@ -1346,24 +1406,12 @@ def rgb2hex(rgb):
     r, g, b = rgb[0],rgb[1],rgb[2]
     return f'#{r:02x}{g:02x}{b:02x}'
 
-color1=[236,230,220]
-fcolor1=[0,0,0]
-
-#load master spells dictionary
-masterspellsdict={}
-for spellfile in glob('5etools*/data/spells/spells*.json'):
-    with open(spellfile) as temp:
-        data=json.load(temp)
-        for rawspell in data['spell']:
-            masterspellsdict[rawspell['name']]=rawspell
-schools={'V':'evocation','N':'necromancy','T':'transmutation','I':'illusion','E':'enchantment','D':'divination','C':'conjuration','A':'abjuration'}
-
-welcomemessage=False
-
 class UpdateWindow(QMainWindow):
     def __init__(self,latest):
         QMainWindow.__init__(self)
         self.setWindowTitle("Py5e Updater")
+        icon=QIcon(logo)
+        self.setWindowIcon(icon)
         layout=QVBoxLayout()
         message=QLabel(f'Latest update ({version} \u2192 {latest}) downloaded. Please exit and relaunch.')
         layout.addWidget(message)
@@ -1403,6 +1451,8 @@ class CharacterSelectWindow(QMainWindow):
     def __init__(self,updatestatus):
         QMainWindow.__init__(self)
         self.setWindowTitle("Py5e")
+        icon=QIcon(logo)
+        self.setWindowIcon(icon)
         font=QApplication.font()
         font.setPointSize(10)
         QApplication.setFont(font)
@@ -1450,6 +1500,20 @@ def CharacterSelect(updatestatus):
     return
 
 if __name__=="__main__":
+    if getattr(sys, 'frozen', False): base_path = Path(sys._MEIPASS)
+    else: base_path = Path(__file__).parent
+    logo=str(base_path / 'data/Logo.png')
+    color1=[236,230,220]
+    fcolor1=[0,0,0]
+
+    #load master spells dictionary
+    masterspellsdict={}
+    for spellfile in sorted(glob('5etools*/data/spells/spells*.json')):
+        with open(spellfile) as temp:
+            data=json.load(temp)
+            for rawspell in data['spell']: masterspellsdict[rawspell['name']]=rawspell
+    schools={'V':'evocation','N':'necromancy','T':'transmutation','I':'illusion','E':'enchantment','D':'divination','C':'conjuration','A':'abjuration'}
+
     updatestatus=updatecheck()
     filename=None
     CharacterSelect(updatestatus)

@@ -1,6 +1,6 @@
 Py5e - An Interactive Character Sheet for D&D 5th Edition
 Developed by Anthony Taylor
-Version: 2026_03_15
+Version: 2026_07_12
 
 (Due to a recent overhaul and port from Tkinter to PySide6, this document is a bit out of date).
 
@@ -99,3 +99,4 @@ CHANGELOG
 (2026/03/10): New Features: Any Ability, Equipment, Feature, Item, or Spell can now be right-clicked to show a delete option. All delete buttons in the GUI have been removed. Spells can now be deleted. An entry under the Edit Menu ("Remove...") explains this via a popup. 
 (2026/03/11): Bug Fixes: The marking of the sheet title with an "*" caused a bug that prevented a new character sheet from ever showing updated data. This is now fixed. New Features: Opening a New Character now automatically launches the Character editor when selected. 
 (2026/03/15): New Features: Any Ability, Equipment, Feature, Item, or Spell can now be right-clicked to show an Edit option that calls a popup to edit that object. Bug Fixes: Max Uses when creating a new ability now function as expected.
+(2026/07/12): Bug Fixes: Character STR ability scores are no longer ignored (bug introduced in 2026/03/15). Parentheses now appear in looked-up spell descriptions (previously they were removed during string sanitization). New features: Spell descriptions now properly handle 5e.tools '@' notation and tables. PHB2024 descriptions are now default when available. Preliminary icon added to the application.
