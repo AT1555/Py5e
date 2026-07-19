@@ -1,0 +1,53 @@
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QScrollArea, QHBoxLayout, QFrame
+from PySide6.QtCore import Qt
+
+class spellsPage(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.spellsLayout=QVBoxLayout()
+        self.setLayout(self.spellsLayout)
+        self.spellsHeader=QLabel('Casting ability: ?, Save DC: ?, Spell Attack Bonus: ?',alignment=Qt.AlignmentFlag.AlignCenter)
+        self.spellsLayout.addWidget(self.spellsHeader)
+
+        self.spellsBody=QWidget()
+        self.spellsScroll=QScrollArea()
+        self.spellsScroll.setWidget(self.spellsBody)
+        self.spellsScroll.setWidgetResizable(True)
+        self.spellsScroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.spellsScroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.spellsLayout.addWidget(self.spellsScroll)
+        self.spellsBodyLayout=QHBoxLayout()
+        self.spellsBody.setLayout(self.spellsBodyLayout)
+        self.spellsBodyLayout.addStretch()
+        self.spellsLLayout=QVBoxLayout()
+        self.spellsBodyLayout.addLayout(self.spellsLLayout)
+        self.spellsBodyLayout.addWidget(QFrame(frameShape=QFrame.VLine))
+        self.spellsCLayout=QVBoxLayout()
+        self.spellsBodyLayout.addLayout(self.spellsCLayout)
+        self.spellsBodyLayout.addWidget(QFrame(frameShape=QFrame.VLine))
+        self.spellsRLayout=QVBoxLayout()
+        self.spellsBodyLayout.addLayout(self.spellsRLayout)
+        self.spellsBodyLayout.addStretch()
+
+        self.spellLVLLayouts={str(i):QVBoxLayout() for i in range(10)}
+        self.spellsLLayout.addLayout(self.spellLVLLayouts['0'])
+        self.spellsLLayout.addWidget(QFrame(frameShape=QFrame.HLine))
+        self.spellsLLayout.addLayout(self.spellLVLLayouts['1'])
+        self.spellsLLayout.addStretch()
+        self.spellsCLayout.addLayout(self.spellLVLLayouts['2'])
+        self.spellsCLayout.addWidget(QFrame(frameShape=QFrame.HLine))
+        self.spellsCLayout.addLayout(self.spellLVLLayouts['3'])
+        self.spellsCLayout.addWidget(QFrame(frameShape=QFrame.HLine))
+        self.spellsCLayout.addLayout(self.spellLVLLayouts['4'])
+        self.spellsCLayout.addStretch()
+        self.spellsRLayout.addLayout(self.spellLVLLayouts['5'])
+        self.spellsRLayout.addWidget(QFrame(frameShape=QFrame.HLine))
+        self.spellsRLayout.addLayout(self.spellLVLLayouts['6'])
+        self.spellsRLayout.addWidget(QFrame(frameShape=QFrame.HLine))
+        self.spellsRLayout.addLayout(self.spellLVLLayouts['7'])
+        self.spellsRLayout.addWidget(QFrame(frameShape=QFrame.HLine))
+        self.spellsRLayout.addLayout(self.spellLVLLayouts['8'])
+        self.spellsRLayout.addWidget(QFrame(frameShape=QFrame.HLine))
+        self.spellsRLayout.addLayout(self.spellLVLLayouts['9'])
+        self.spellsRLayout.addStretch()
